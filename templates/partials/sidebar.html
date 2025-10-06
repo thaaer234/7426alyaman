@@ -20,6 +20,12 @@
   {% if user.is_authenticated %}
     <a href="/">الرئيسية</a>
 
+    {% if user.employee_profile %}
+      <a href="{% url 'employ:employee_profile' user.employee_profile.pk %}">
+        <i class="fas fa-user-circle"></i> ملفي الشخصي
+      </a>
+    {% endif %}
+
     {% if user.is_superuser or user|has_perm:"students_view" %}
       <a href="{% url 'students:student' %}">الطلاب</a>
     {% endif %}
