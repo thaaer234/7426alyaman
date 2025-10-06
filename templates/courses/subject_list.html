@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% block content %}
+<h2>قائمة المواد</h2>
+
+<!-- إضافة عناصر البحث والتصفية -->
+<div class="filters mb-3">
+    <div class="row">
+        <div class="col-md-4">
+            <input type="text" id="searchInput" class="form-control" placeholder="ابحث باسم المادة...">
+        </div>
+        <div class="col-md-4">
+            <select id="teacherFilter" class="form-control">
+                <option value="">جميع المدرسين</option>
+                {% for teacher in teachers %}
+                <option value="{{ teacher.id }}">{{ teacher.full_name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="col-md-4">
+            <button id="sortBtn" class="btn btn-outline-secondary">
+                <i class="fas fa-sort-alpha-down"></i> ترتيب أبجدي
+            </button>
+        </div>
+    </div>
+</div>
+
+<a href="{% url 'courses:subject_create' %}" class="btn btn-primary mb-3">
+    <i class="fas fa-plus"></i> إضافة مادة جديدة
+</a>
+
+<table class="table" id="subjectsTable">
+    <thead class="thead-dark">
+        <tr>
+            <th>اسم المادة</th>
+            <th>النوع</th>
+            <th>المدرسون</th>
+            <th>الإجراءات</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for subject in object_list %}
+        <tr>
+            <td>{{ subject.name }}</td>
+            <td>{{ subject.get_subject_type_display }}</td>
+            <td>
+                {% for teacher in subject.teachers.all %}
+                <span class="teacher-tag" data-teacher-id="{{ teacher.id }}">{{ teacher.full_name }}</span>{% if not forloop.last %}, {% endif %}
+                {% endfor %}
+            </td>
+            <td>
+                <div class="btn-group" role="group">
+                    <a href="{% url 'courses:subject_update' subject.id %}" class="btn btn-sm btn-warning">
+                        <i class="fas fa-edit"></i> تعديل
+                    </a>
+                </div>
+                <div class="btn-group" role="group">
+                    <form method="post" action="{% url 'courses:subject_delete' subject.id %}" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-danger" 
+                                onclick="return confirm('هل أنت متأكد من حذف هذه المادة؟')">
+                            <i class="fas fa-trash"></i> حذف
+                        </button>
+                    </form>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+
+<!-- إضافة سكريبت للبحث والتصفية -->
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const searchInput = document.getElementById('searchInput');
+    const teacherFilter = document.getElementById('teacherFilter');
+    const sortBtn = document.getElementById('sortBtn');
+    const table = document.getElementById('subjectsTable');
+    const rows = table.getElementsByTagName('tbody')[0].getElementsByTagName('tr');
+    
+    let isSorted = false;
+    
+    // وظيفة البحث
+    searchInput.addEventListener('keyup', function() {
+        filterSubjects();
+    });
+    
+    // وظيفة التصفية حسب الأستاذ
+    teacherFilter.addEventListener('change', function() {
+        filterSubjects();
+    });
+    
+    // وظيفة الترتيب الأبجدي
+    sortBtn.addEventListener('click', function() {
+        sortSubjects();
+    });
+    
+    function filterSubjects() {
+        const searchText = searchInput.value.toLowerCase();
+        const teacherId = teacherFilter.value;
+        
+        for (let i = 0; i < rows.length; i++) {
+            const subjectName = rows[i].getElementsByTagName('td')[0].textContent.toLowerCase();
+            const teacherTags = rows[i].querySelectorAll('.teacher-tag');
+            let hasTeacher = false;
+            
+            // التحقق من وجود الأستاذ المحدد
+            if (teacherId) {
+                for (let j = 0; j < teacherTags.length; j++) {
+                    if (teacherTags[j].getAttribute('data-teacher-id') === teacherId) {
+                        hasTeacher = true;
+                        break;
+                    }
+                }
+            } else {
+                hasTeacher = true; // إذا لم يتم اختيار أستاذ معين، اعرض جميع المواد
+            }
+            
+            // التحقق من نص البحث ووجود الأستاذ
+            if (subjectName.includes(searchText) && hasTeacher) {
+                rows[i].style.display = '';
+            } else {
+                rows[i].style.display = 'none';
+            }
+        }
+    }
+    
+    function sortSubjects() {
+        const tbody = table.getElementsByTagName('tbody')[0];
+        const rowsArray = Array.from(rows);
+        
+        rowsArray.sort(function(a, b) {
+            const nameA = a.getElementsByTagName('td')[0].textContent.toUpperCase();
+            const nameB = b.getElementsByTagName('td')[0].textContent.toUpperCase();
+            
+            if (isSorted) {
+                return nameB.localeCompare(nameA);
+            } else {
+                return nameA.localeCompare(nameB);
+            }
+        });
+        
+        // إفراغ الجدول وإعادة إضافة الصفوف بالترتيب الجديد
+        while (tbody.firstChild) {
+            tbody.removeChild(tbody.firstChild);
+        }
+        
+        rowsArray.forEach(function(row) {
+            tbody.appendChild(row);
+        });
+        
+        // تبديل حالة الترتيب
+        isSorted = !isSorted;
+        
+        // تحديث نص الزر
+        if (isSorted) {
+            sortBtn.innerHTML = '<i class="fas fa-sort-alpha-up"></i> ترتيب عكسي';
+        } else {
+            sortBtn.innerHTML = '<i class="fas fa-sort-alpha-down"></i> ترتيب أبجدي';
+        }
+    }
+});
+</script>
+
+<style>
+.teacher-tag {
+    background-color: #f0f0f0;
+    padding: 2px 6px;
+    border-radius: 4px;
+    margin: 2px;
+    display: inline-block;
+}
+</style>
+{% endblock %}

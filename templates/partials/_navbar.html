@@ -1,0 +1,546 @@
+{% load emp_perms %}
+{% load static emp_perms %}
+{% if user.is_authenticated %}
+<!-- Mobile menu toggle button -->
+<button class="mobile-menu-toggle d-md-none" onclick="toggleSidebar()">
+    <i class="fas fa-bars"></i>
+</button>
+
+<div class="sidebar">
+    <div class="sidebar-header">
+        <div class="logo-container">
+            <img src="{% static 'img/logo.png' %}" alt="معهد اليمان" class="sidebar-logo" 
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="logo-fallback" style="display: none;">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+        </div>
+        <div class="user-info">
+            <span>{{ user.get_full_name|default:user.username }}</span>
+            {# إذا بدك تظهر وصفاً ثانوياً، خلّيه فارغ أو اكتب "موظف" #}
+            <small>‎</small>
+        </div>
+    </div>
+    
+    <div class="sidebar-menu">
+        <!-- لوحة التحكم (نعتبرها صلاحية admin_dashboard أو reports_dashboard) -->
+        {% if user.is_superuser or 'admin_dashboard' in emp_perms or 'reports_dashboard' in emp_perms %}
+        <a href="{% url "pages:index" %}" class="menu-item" data-module="dashboard">
+            <i class="fas fa-tachometer-alt"></i>
+            <span>لوحة التحكم</span>
+        </a>
+        {% endif %}
+
+        <!-- إدارة الطلاب -->
+        {% if user.is_superuser or 'students_view' in emp_perms %}
+        <a href="{% url "students:student" %}" class="menu-item" data-module="students">
+            <i class="fas fa-user-graduate"></i>
+            <span>الطلاب</span>
+        </a>
+        {% endif %}
+
+        <!-- إدارة المدرسين -->
+        {% if user.is_superuser or 'teachers_view' in emp_perms %}
+        <a href="{% url "employ:teachers" %}" class="menu-item" data-module="teachers">
+            <i class="fas fa-chalkboard-teacher"></i>
+            <span>المدرسون</span>
+        </a>
+        {% endif %}
+
+        <!-- المحاسبة -->
+        {% if user.is_superuser or 'accounting_dashboard' in emp_perms or 'accounting_view' in emp_perms %}
+        <a href="{% url "accounts:dashboard" %}" class="menu-item {% if request.resolver_match and 'accounts' == request.resolver_match.app_name %}active{% endif %}" data-module="accounts">
+            <i class="fas fa-file-invoice-dollar"></i>
+            <span>المحاسبة</span>
+        </a>
+        {% endif %}
+
+        <!-- إدارة الحضور -->
+        {% if user.is_superuser or 'attendance_view' in emp_perms or 'attendance_teacher_view' in emp_perms %}
+        <div class="menu-group">
+            <div class="menu-group-title">
+                <i class="fas fa-calendar-alt"></i>
+                <span>إدارة الحضور</span>
+            </div>
+            {% if user.is_superuser or 'attendance_view' in emp_perms %}
+            <a href="{% url "attendance:attendance" %}" class="menu-item sub-item" data-module="attendance">
+                <i class="fas fa-calendar-check"></i>
+                <span>حضور الطلاب</span>
+            </a>
+            {% endif %}
+            {% if user.is_superuser or 'attendance_teacher_view' in emp_perms %}
+            <a class="menu-item sub-item" href="{% url 'attendance:teacher_attendance' %}">
+                <i class="fas fa-user-check"></i>
+                <span>حضور المدرسين</span>
+            </a>
+            {% endif %}
+            {% if user.is_superuser or 'reports_students' in emp_perms %}
+            <a href="{% url "students:stu_num" %}" class="menu-item sub-item" data-module="students-count">
+                <i class="fas fa-users"></i>
+                <span>عدد الطلاب</span>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- إدارة الشعب والعلامات -->
+        {% if user.is_superuser or 'classroom_view' in emp_perms or 'grades_view' in emp_perms %}
+        <div class="menu-group">
+            <div class="menu-group-title">
+                <i class="fas fa-chalkboard"></i>
+                <span>إدارة التعليم</span>
+            </div>
+            {% if user.is_superuser or 'classroom_view' in emp_perms %}
+            <a href="{% url "classroom:classroom" %}" class="menu-item sub-item" data-module="classroom">
+                <i class="fas fa-chalkboard"></i>
+                <span>الشعب الدراسية</span>
+            </a>
+            {% endif %}
+            {% if user.is_superuser or 'grades_view' in emp_perms %}
+            <a href="{% url "grade:dashboard" %}" class="menu-item sub-item" data-module="grades">
+                <i class="fas fa-chart-line"></i>
+                <span>العلامات</span>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- إدارة الموارد البشرية -->
+        {% if user.is_superuser or 'hr_view' in emp_perms or 'hr_dashboard' in emp_perms %}
+        <div class="menu-group">
+            <div class="menu-group-title">
+                <i class="fas fa-user-tie"></i>
+                <span>الموارد البشرية</span>
+            </div>
+            {% if user.is_superuser or 'hr_view' in emp_perms %}
+            <a href="{% url "employ:hr" %}" class="menu-item sub-item {% if request.resolver_match and request.resolver_match.url_name == 'hr' %}active{% endif %}" data-module="hr">
+                <i class="fas fa-users"></i>
+                <span>الموظفين</span>
+            </a>
+            {% endif %}
+            {% if user.is_superuser or 'hr_salary' in emp_perms %}
+            <a href="{% url "employ:salary_management" %}" class="menu-item sub-item {% if request.resolver_match and request.resolver_match.url_name == 'salary_management' %}active{% endif %}" data-module="salary">
+                <i class="fas fa-money-bill-wave"></i>
+                <span>إدارة الرواتب</span>
+            </a>
+            {% endif %}
+            {% if user.is_superuser or 'hr_vacations' in emp_perms %}
+            <a href="{% url "employ:vacation_list" %}" class="menu-item sub-item {% if request.resolver_match and request.resolver_match.url_name == 'vacation_list' %}active{% endif %}" data-module="vacations">
+                <i class="fas fa-umbrella-beach"></i>
+                <span>الإجازات</span>
+            </a>
+            {% endif %}
+            {% if user.is_superuser or 'hr_advances' in emp_perms %}
+            <a href="{% url "accounts:advance_list" %}" class="menu-item sub-item {% if request.resolver_match and 'advance' in request.resolver_match.url_name %}active{% endif %}" data-module="advances">
+                <i class="fas fa-hand-holding-usd"></i>
+                <span>سلف الموظفين</span>
+            </a>
+            {% endif %}
+        </div>
+        {% endif %}
+
+        <!-- إدارة المواد -->
+        {% if user.is_superuser or 'courses_view' in emp_perms %}
+        <a href="{% url "courses:subject_list" %}" class="menu-item" data-module="subjects">
+            <i class="fas fa-book"></i>
+            <span>المواد الدراسية</span>
+        </a>
+        {% endif %}
+
+        <!-- تسجيل الخروج -->
+        <form action="{% url 'logout' %}" method="post" class="logout-form">
+            {% csrf_token %}
+            <button type="submit" class="menu-item logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>تسجيل الخروج</span>
+            </button>
+        </form>
+    </div>
+</div>
+{% else %}
+<!-- واجهة المستخدم غير المسجل دخولاً -->
+<div class="sidebar">
+    <div class="sidebar-header">
+        <div class="logo-container">
+            <img src="{% static 'img/logo.png' %}" alt="معهد اليمان" class="sidebar-logo" 
+                 onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+            <div class="logo-fallback" style="display: none;">
+                <i class="fas fa-graduation-cap"></i>
+            </div>
+        </div>
+        <div class="user-info">
+            <span>زائر</span>
+            <small>يرجى تسجيل الدخول</small>
+        </div>
+    </div>
+    <div class="sidebar-menu">
+        <a href="{% url "login" %}" class="menu-item login-btn">
+            <i class="fas fa-sign-in-alt"></i>
+            <span>تسجيل الدخول</span>
+        </a>
+    </div>
+</div>
+{% endif %}
+
+
+<style>
+/* Logo container and fallback */
+.logo-container {
+    position: relative;
+    width: 90px;
+    height: 90px;
+    margin: 0 auto 1.5rem;
+}
+
+.logo-fallback {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 2.5rem;
+    color: white;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    transition: var(--transition);
+}
+
+.logo-fallback:hover {
+    transform: scale(1.05);
+    box-shadow: 0 12px 25px rgba(0, 0, 0, 0.4);
+}
+
+/* Enhanced sidebar styling */
+.sidebar {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 50%, #2c3e50 100%);
+    color: white;
+    width: 280px;
+    height: 100vh;
+    position: fixed;
+    top: 0;
+    right: 0;
+    overflow-y: auto;
+    transition: var(--sidebar-transition);
+    box-shadow: 4px 0 20px rgba(0, 0, 0, 0.15);
+    backdrop-filter: blur(10px);
+}
+
+.sidebar-header {
+    padding: 2rem 1.5rem;
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.05);
+    backdrop-filter: blur(10px);
+}
+
+.sidebar-logo {
+    width: 90px;
+    height: 90px;
+    border-radius: 50%;
+    margin-bottom: 1.5rem;
+    object-fit: cover;
+    border: 4px solid rgba(255, 255, 255, 0.3);
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3);
+    transition: var(--transition);
+    background: var(--white);
+    padding: 2px;
+}
+
+.user-info span {
+    display: block;
+    font-weight: 700;
+    font-size: 1.2rem;
+    margin-bottom: 0.5rem;
+    text-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
+    letter-spacing: 0.5px;
+}
+
+.user-info small {
+    color: rgba(255, 255, 255, 0.8);
+    font-size: 0.875rem;
+    font-weight: 500;
+    text-shadow: 0 1px 2px rgba(0, 0, 0, 0.3);
+}
+
+.sidebar-menu {
+    flex-grow: 1;
+    padding: 1.5rem 0;
+    overflow-y: auto;
+}
+
+.menu-group {
+    margin-bottom: 1rem;
+}
+
+.menu-group-title {
+    padding: 1rem 1.5rem 0.5rem;
+    font-weight: 600;
+    font-size: 0.8rem;
+    color: rgba(255, 255, 255, 0.6);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+}
+
+.menu-group-title i {
+    font-size: 1rem;
+    opacity: 0.7;
+}
+
+.menu-item {
+    display: flex;
+    align-items: center;
+    padding: 1rem 1.5rem;
+    margin: 0.25rem 1rem;
+    color: rgba(255, 255, 255, 0.9);
+    text-decoration: none;
+    transition: var(--sidebar-transition);
+    border-radius: var(--border-radius);
+    font-weight: 500;
+    position: relative;
+    overflow: hidden;
+    gap: 1rem;
+}
+
+.menu-item:hover {
+    background: rgba(255, 255, 255, 0.15);
+    color: var(--white);
+    text-decoration: none;
+    transform: translateX(-5px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.2);
+}
+
+.menu-item.active {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: var(--white);
+    box-shadow: 0 6px 15px rgba(102, 126, 234, 0.4);
+    transform: translateX(-3px);
+}
+
+.menu-item.sub-item {
+    padding: 0.75rem 1.5rem 0.75rem 3rem;
+    margin: 0.125rem 1rem;
+    font-size: 0.875rem;
+    opacity: 0.9;
+}
+
+.menu-item i {
+    width: 24px;
+    min-width: 24px;
+    text-align: center;
+    font-size: 1.1rem;
+    transition: var(--sidebar-transition);
+}
+
+.logout-form {
+    border-top: 1px solid rgba(255, 255, 255, 0.2);
+    margin-top: auto;
+    padding: 1rem 0;
+    background: rgba(0, 0, 0, 0.1);
+}
+
+.logout-btn, .login-btn {
+    background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+    border: none;
+    width: 100%;
+    text-align: right;
+    cursor: pointer;
+    transition: var(--sidebar-transition);
+    border-radius: 0;
+    font-weight: 600;
+    padding: 1rem 1.5rem;
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.2);
+}
+
+.logout-btn:hover, .login-btn:hover {
+    background: linear-gradient(135deg, #c0392b 0%, #a93226 100%);
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(231, 76, 60, 0.4);
+}
+
+/* تصميم متجاوب */
+@media (max-width: 1200px) {
+    .sidebar {
+        width: 250px;
+    }
+    .main-content {
+        margin-right: 250px;
+    }
+}
+
+@media (max-width: 768px) {
+    .sidebar {
+        width: var(--sidebar-collapsed-width);
+        overflow-x: hidden;
+    }
+    
+    .main-content {
+        margin-right: var(--sidebar-collapsed-width);
+    }
+    
+    .sidebar-header {
+        padding: 1rem;
+    }
+    
+    .sidebar-logo {
+        width: 50px;
+        height: 50px;
+        margin-bottom: 0.5rem;
+    }
+    
+    .user-info span,
+    .user-info small,
+    .menu-item span,
+    .menu-group-title {
+        display: none;
+    }
+    
+    .menu-item {
+        justify-content: center;
+        padding: 1rem 0;
+        margin: 0.25rem 0;
+        border-radius: 0;
+    }
+    
+    .menu-item i {
+        margin: 0 auto;
+        font-size: 1.4rem;
+        width: auto;
+        min-width: auto;
+    }
+    
+    .menu-item:hover {
+        transform: none;
+        background: rgba(255, 255, 255, 0.15);
+    }
+    
+    .menu-group {
+        margin-bottom: 0.5rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .sidebar {
+        transform: translateX(100%);
+        width: 100%;
+        right: -100%;
+    }
+    
+    .sidebar.active {
+        right: 0;
+        transform: translateX(0);
+    }
+    
+    .main-content {
+        margin-right: 0;
+    }
+    
+    .mobile-menu-toggle {
+        display: block !important;
+    }
+}
+
+/* Enhanced mobile styles */
+@media (max-width: 480px) {
+    .menu-item {
+        padding: 1.2rem;
+        font-size: 0.9rem;
+    }
+    
+    .menu-item i {
+        font-size: 1.5rem;
+    }
+}
+</style>
+
+<script>
+// Enhanced sidebar functionality
+document.addEventListener('DOMContentLoaded', function() {
+    // Initialize sidebar
+    initializeSidebar();
+    
+    // Set active menu item based on current page
+    const currentPath = window.location.pathname;
+    const menuItems = document.querySelectorAll('.menu-item');
+    
+    menuItems.forEach(item => {
+        const href = item.getAttribute('href');
+        if (href && (currentPath === href || currentPath.startsWith(href + '/'))) {
+            item.classList.add('active');
+        }
+    });
+    
+    // Add interactive effects
+    const menuGroups = document.querySelectorAll('.menu-group-title');
+    menuGroups.forEach(group => {
+        group.addEventListener('click', function() {
+            this.parentElement.classList.toggle('expanded');
+        });
+    });
+    
+    // Add loading animation to cards
+    const cards = document.querySelectorAll('.card, .dashboard-card');
+    cards.forEach((card, index) => {
+        card.style.animationDelay = `${index * 0.1}s`;
+        card.classList.add('animate-slide-in-up');
+    });
+    
+    // Add hover effects to buttons
+    const buttons = document.querySelectorAll('.btn');
+    buttons.forEach(button => {
+        button.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-2px)';
+        });
+        
+        button.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+        });
+    });
+});
+
+// Sidebar toggle for mobile
+function toggleSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    sidebar.classList.toggle('active');
+}
+
+// Initialize sidebar functionality
+function initializeSidebar() {
+    const sidebar = document.querySelector('.sidebar');
+    
+    // Close sidebar when clicking outside on mobile
+    document.addEventListener('click', function(event) {
+        if (window.innerWidth <= 768) {
+            const sidebar = document.querySelector('.sidebar');
+            const toggleBtn = document.querySelector('.mobile-menu-toggle');
+            
+            if (!sidebar.contains(event.target) && !toggleBtn.contains(event.target)) {
+                sidebar.classList.remove('active');
+            }
+        }
+    });
+    
+    // Handle window resize
+    window.addEventListener('resize', function() {
+        const sidebar = document.querySelector('.sidebar');
+        if (window.innerWidth > 768) {
+            sidebar.classList.remove('active');
+        }
+    });
+}
+
+// Enhanced scroll behavior
+window.addEventListener('scroll', function() {
+    const sidebar = document.querySelector('.sidebar');
+    if (window.scrollY > 50) {
+        sidebar.style.boxShadow = '4px 0 25px rgba(0, 0, 0, 0.2)';
+    } else {
+        sidebar.style.boxShadow = '4px 0 20px rgba(0, 0, 0, 0.15)';
+    }
+});
+</script>

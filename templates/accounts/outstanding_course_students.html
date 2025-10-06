@@ -1,0 +1,58 @@
+{% extends 'accounts/base.html' %}
+
+
+{% load emp_perms %}
+{% block title %}ذمم الطلاب للدورة / Course Outstanding{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>ذمم الطلاب - {{ course.name }}{% if course.name_ar %} / {{ course.name_ar }}{% endif %}</h2>
+    <a href="{% url 'accounts:outstanding_courses' %}" class="btn btn-secondary">رجوع / Back</a>
+</div>
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">لوحة التحكم / Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'accounts:reports' %}">التقارير / Reports</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'accounts:outstanding_courses' %}">الدورات غير المسددة / Outstanding Courses</a></li>
+        <li class="breadcrumb-item active">الطلاب / Students</li>
+    </ol>
+    
+</nav>
+
+<div class="table-container">
+    {% if student_data %}
+        <div class="table-responsive">
+            <table class="table table-bordered">
+                <thead class="table-dark">
+                    <tr>
+                        <th>الطالب / Student</th>
+                        <th class="text-end">سعر الدورة / Course Price</th>
+                        <th class="text-end">الصافي المستحق / Net Due</th>
+                        <th class="text-end">المدفوع / Paid</th>
+                        <th class="text-end">المتبقي / Remaining</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for row in student_data %}
+                    <tr>
+                        <td>{{ row.student.full_name }}</td>
+                        <td class="text-end">{{ row.course_price|floatformat:2 }}</td>
+                        <td class="text-end">{{ row.net_due|floatformat:2 }}</td>
+                        <td class="text-end">{{ row.paid_total|floatformat:2 }}</td>
+                        <td class="text-end fw-bold">{{ row.remaining|floatformat:2 }}</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center text-muted py-5">
+            <i class="fas fa-user-graduate fa-3x mb-3"></i>
+            <h4>لا يوجد طلاب بذمم / No outstanding students</h4>
+        </div>
+    {% endif %}
+</div>
+
+{% endblock %}
+

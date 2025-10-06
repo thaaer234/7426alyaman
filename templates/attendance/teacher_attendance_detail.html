@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+{% block content %}
+<div class="module-header">
+    <h2>تفاصيل حضور المدرسين - {{ date }}</h2>
+    <div class="header-actions">
+        <a href="{% url 'attendance:teacher_attendance' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> العودة للسجل
+        </a>
+    </div>
+</div>
+{% include "partials/_alerts.html" %}
+
+<div class="table-container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>المدرس</th>
+                <th>الحالة</th>
+                <th>عدد الجلسات</th>
+                <th>ملاحظات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for attendance in attendances %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ attendance.teacher.full_name }}</td>
+                <td>
+                    <span class="badge 
+                        {% if attendance.status == 'present' %}bg-success
+                        {% elif attendance.status == 'absent' %}bg-danger
+                        {% elif attendance.status == 'late' %}bg-warning
+                        {% else %}bg-secondary{% endif %}">
+                        {{ attendance.get_status_display }}
+                    </span>
+                </td>
+                <td>{{ attendance.session_count }}</td>
+                <td>{{ attendance.notes|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="5" class="text-center">لا توجد سجلات حضور لهذا التاريخ</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

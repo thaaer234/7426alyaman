@@ -1,0 +1,63 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+
+{% block title %}لوحة تحكم المدرسين / Teachers Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0">
+                        <i class="fas fa-tachometer-alt me-2"></i>
+                        لوحة تحكم المدرسين / Teachers Dashboard
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Quick Actions -->
+                    <div class="row">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h6 class="mb-0">الإجراءات السريعة / Quick Actions</h6>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-3">
+                                            <a href="{% url 'employ:teachers' %}" class="btn btn-outline-primary w-100 mb-2">
+                                                <i class="fas fa-users me-2"></i>
+                                                إدارة المدرسين
+                                            </a>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <a href="{% url 'attendance:teacher_attendance' %}" class="btn btn-outline-info w-100 mb-2">
+                                                <i class="fas fa-calendar-check me-2"></i>
+                                                سجل الحضور
+                                            </a>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <a href="{% url 'employ:create' %}" class="btn btn-outline-warning w-100 mb-2">
+                                                <i class="fas fa-plus me-2"></i>
+                                                إضافة مدرس جديد
+                                            </a>
+                                        </div>
+                                        <div class="col-md-3">
+                                            <a href="{% url 'employ:vacation_list' %}" class="btn btn-outline-secondary w-100 mb-2">
+                                                <i class="fas fa-calendar-times me-2"></i>
+                                                إدارة الإجازات
+                                            </a>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

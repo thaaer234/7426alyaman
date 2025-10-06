@@ -1,0 +1,377 @@
+{% extends 'base.html' %}
+{% load static %}
+
+{% block title %}Number Formatter Demo - تجربة منسق الأرقام{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/number-formatter.css' %}">
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/number-formatter.js' %}"></script>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-calculator"></i>
+                        Number Formatter Demo - تجربة منسق الأرقام
+                    </h3>
+                    <div class="card-tools">
+                        <a href="{% url 'accounts:financial_reports_dashboard' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i>
+                            العودة للتقارير المالية
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Instructions -->
+                    <div class="alert alert-info">
+                        <h5><i class="fas fa-info-circle"></i> Instructions - التعليمات:</h5>
+                        <p>Type numbers in the input fields below and watch as commas are automatically added every three digits.</p>
+                        <p>اكتب الأرقام في الحقول أدناه وشاهد كيف يتم إضافة الفواصل تلقائياً كل ثلاثة أرقام.</p>
+                    </div>
+
+                    <!-- Demo Form -->
+                    <form class="demo-form">
+                        <div class="row">
+                            <!-- Basic Number Input -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="basic-number" class="form-label">Basic Number - رقم أساسي:</label>
+                                    <input 
+                                        type="text" 
+                                        id="basic-number" 
+                                        name="basic-number" 
+                                        class="form-control"
+                                        placeholder="Type a number... اكتب رقماً..."
+                                        data-number-format="true"
+                                        data-thousand-separator=","
+                                        data-decimal-separator="."
+                                        data-decimal-places="2"
+                                        data-allow-negative="true"
+                                    >
+                                    <small class="form-text text-muted">Example: 1234567.89 → 1,234,567.89</small>
+                                </div>
+                            </div>
+
+                            <!-- Currency Input -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="currency-input" class="form-label">Currency - عملة:</label>
+                                    <input 
+                                        type="text" 
+                                        id="currency-input" 
+                                        name="currency-input" 
+                                        class="form-control currency-input"
+                                        placeholder="Enter amount... أدخل المبلغ..."
+                                        data-number-format="true"
+                                        data-thousand-separator=","
+                                        data-decimal-separator="."
+                                        data-decimal-places="2"
+                                        data-allow-negative="true"
+                                        data-prefix="ريال"
+                                    >
+                                    <small class="form-text text-muted">Example: 50000 → ريال 50,000.00</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Integer Input -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="integer-input" class="form-label">Integer Only - أرقام صحيحة فقط:</label>
+                                    <input 
+                                        type="text" 
+                                        id="integer-input" 
+                                        name="integer-input" 
+                                        class="form-control"
+                                        placeholder="Enter integer... أدخل رقماً صحيحاً..."
+                                        data-number-format="true"
+                                        data-thousand-separator=","
+                                        data-decimal-separator="."
+                                        data-decimal-places="0"
+                                        data-allow-negative="true"
+                                    >
+                                    <small class="form-text text-muted">Example: 1000000 → 1,000,000</small>
+                                </div>
+                            </div>
+
+                            <!-- Percentage Input -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="percentage-input" class="form-label">Percentage - نسبة مئوية:</label>
+                                    <input 
+                                        type="text" 
+                                        id="percentage-input" 
+                                        name="percentage-input" 
+                                        class="form-control"
+                                        placeholder="Enter percentage... أدخل النسبة..."
+                                        data-number-format="true"
+                                        data-thousand-separator=","
+                                        data-decimal-separator="."
+                                        data-decimal-places="2"
+                                        data-allow-negative="false"
+                                        data-suffix="%"
+                                    >
+                                    <small class="form-text text-muted">Example: 15.5 → 15.50%</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row">
+                            <!-- Large Number Input -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="large-number" class="form-label">Large Number - رقم كبير:</label>
+                                    <input 
+                                        type="text" 
+                                        id="large-number" 
+                                        name="large-number" 
+                                        class="form-control input-lg"
+                                        placeholder="Enter large number... أدخل رقماً كبيراً..."
+                                        data-number-format="true"
+                                        data-thousand-separator=","
+                                        data-decimal-separator="."
+                                        data-decimal-places="2"
+                                        data-allow-negative="true"
+                                    >
+                                    <small class="form-text text-muted">Example: 999999999.99 → 999,999,999.99</small>
+                                </div>
+                            </div>
+
+                            <!-- Negative Number Input -->
+                            <div class="col-md-6">
+                                <div class="form-group">
+                                    <label for="negative-number" class="form-label">Negative Numbers - أرقام سالبة:</label>
+                                    <input 
+                                        type="text" 
+                                        id="negative-number" 
+                                        name="negative-number" 
+                                        class="form-control"
+                                        placeholder="Enter negative number... أدخل رقماً سالباً..."
+                                        data-number-format="true"
+                                        data-thousand-separator=","
+                                        data-decimal-separator="."
+                                        data-decimal-places="2"
+                                        data-allow-negative="true"
+                                    >
+                                    <small class="form-text text-muted">Example: -1234567.89 → -1,234,567.89</small>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Form Actions -->
+                        <div class="row">
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <button type="button" class="btn btn-primary" onclick="getValues()">
+                                        <i class="fas fa-eye"></i>
+                                        Show Values - عرض القيم
+                                    </button>
+                                    <button type="button" class="btn btn-secondary" onclick="clearAll()">
+                                        <i class="fas fa-eraser"></i>
+                                        Clear All - مسح الكل
+                                    </button>
+                                    <button type="button" class="btn btn-success" onclick="setSampleValues()">
+                                        <i class="fas fa-magic"></i>
+                                        Sample Values - قيم تجريبية
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </form>
+
+                    <!-- Results Display -->
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-list"></i>
+                                        Current Values - القيم الحالية
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div id="values-display" class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>Field - الحقل</th>
+                                                    <th>Display Value - القيمة المعروضة</th>
+                                                    <th>Raw Value - القيمة الخام</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="values-table-body">
+                                                <tr>
+                                                    <td colspan="3" class="text-center text-muted">
+                                                        Click "Show Values" to see current values
+                                                        <br>
+                                                        اضغط "عرض القيم" لرؤية القيم الحالية
+                                                    </td>
+                                                </tr>
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Features List -->
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-star"></i>
+                                        Features - المميزات
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6>Real-time Formatting - التنسيق الفوري:</h6>
+                                            <ul class="list-unstyled">
+                                                <li><i class="fas fa-check text-success"></i> Commas added as you type</li>
+                                                <li><i class="fas fa-check text-success"></i> Decimal places controlled</li>
+                                                <li><i class="fas fa-check text-success"></i> Negative numbers supported</li>
+                                                <li><i class="fas fa-check text-success"></i> Prefix and suffix support</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>Smart Input Handling - معالجة ذكية:</h6>
+                                            <ul class="list-unstyled">
+                                                <li><i class="fas fa-check text-success"></i> Cursor position maintained</li>
+                                                <li><i class="fas fa-check text-success"></i> Copy/paste support</li>
+                                                <li><i class="fas fa-check text-success"></i> Keyboard navigation</li>
+                                                <li><i class="fas fa-check text-success"></i> Mobile-friendly</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Demo functions
+function getValues() {
+    const fields = [
+        'basic-number',
+        'currency-input', 
+        'integer-input',
+        'percentage-input',
+        'large-number',
+        'negative-number'
+    ];
+    
+    const tableBody = document.getElementById('values-table-body');
+    tableBody.innerHTML = '';
+    
+    fields.forEach(fieldId => {
+        const input = document.getElementById(fieldId);
+        const formatter = input.numberFormatter;
+        
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${input.name}</td>
+            <td><code>${input.value}</code></td>
+            <td><code>${formatter ? formatter.getValue() : input.value}</code></td>
+        `;
+        tableBody.appendChild(row);
+    });
+}
+
+function clearAll() {
+    const fields = [
+        'basic-number',
+        'currency-input', 
+        'integer-input',
+        'percentage-input',
+        'large-number',
+        'negative-number'
+    ];
+    
+    fields.forEach(fieldId => {
+        const input = document.getElementById(fieldId);
+        const formatter = input.numberFormatter;
+        if (formatter) {
+            formatter.setValue('');
+        } else {
+            input.value = '';
+        }
+    });
+    
+    getValues();
+}
+
+function setSampleValues() {
+    const samples = {
+        'basic-number': '1234567.89',
+        'currency-input': '50000',
+        'integer-input': '1000000',
+        'percentage-input': '15.5',
+        'large-number': '999999999.99',
+        'negative-number': '-1234567.89'
+    };
+    
+    Object.entries(samples).forEach(([fieldId, value]) => {
+        const input = document.getElementById(fieldId);
+        const formatter = input.numberFormatter;
+        if (formatter) {
+            formatter.setValue(value);
+        } else {
+            input.value = value;
+        }
+    });
+    
+    getValues();
+}
+
+// Initialize formatters when page loads
+document.addEventListener('DOMContentLoaded', function() {
+    // Auto-initialize all elements with data-number-format attribute
+    const elements = document.querySelectorAll('[data-number-format]');
+    
+    elements.forEach(element => {
+        const options = {};
+        
+        // Parse options from data attributes
+        if (element.dataset.thousandSeparator) {
+            options.thousandSeparator = element.dataset.thousandSeparator;
+        }
+        if (element.dataset.decimalSeparator) {
+            options.decimalSeparator = element.dataset.decimalSeparator;
+        }
+        if (element.dataset.decimalPlaces) {
+            options.decimalPlaces = parseInt(element.dataset.decimalPlaces);
+        }
+        if (element.dataset.allowNegative) {
+            options.allowNegative = element.dataset.allowNegative === 'true';
+        }
+        if (element.dataset.prefix) {
+            options.prefix = element.dataset.prefix;
+        }
+        if (element.dataset.suffix) {
+            options.suffix = element.dataset.suffix;
+        }
+        
+        // Initialize formatter and store reference
+        if (window.NumberFormatter) {
+            element.numberFormatter = new window.NumberFormatter(element, options);
+        }
+    });
+});
+</script>
+{% endblock %}

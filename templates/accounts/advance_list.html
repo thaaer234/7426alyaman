@@ -1,0 +1,86 @@
+{% extends 'accounts/base.html' %}
+
+
+{% load emp_perms %}
+{% block title %}سلف الموظفين / Employee Advances{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>سلف الموظفين / Employee Advances</h2>
+    <div>
+        <a href="{% url 'accounts:advance_create' %}" class="btn btn-primary" style="background-color: #3498db;">
+            <i class="fas fa-plus"></i> سلفة جديدة / New Advance
+        </a>
+    </div>
+</div>
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">لوحة التحكم / Dashboard</a></li>
+        <li class="breadcrumb-item active">سلف الموظفين / Employee Advances</li>
+    </ol>
+</nav>
+
+<div class="table-container">
+    {% if advances %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>رقم السلفة / Advance Number</th>
+                        <th>اسم الموظف / Employee Name</th>
+                        <th>التاريخ / Date</th>
+                        <th>المبلغ / Amount</th>
+                        <th>المبلغ المتبقي / Outstanding</th>
+                        <th>الحالة / Status</th>
+                        <th>الإجراءات / Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for advance in advances %}
+                    <tr>
+                        <td>
+                            <a href="{% url 'accounts:advance_detail' advance.pk %}" class="text-decoration-none">
+                                <strong>{{ advance.advance_number }}</strong>
+                            </a>
+                        </td>
+                        <td>{{ advance.employee_name }}</td>
+                        <td>{{ advance.date }}</td>
+                        <td class="text-end">{{ advance.amount|floatformat:2 }}</td>
+                        <td class="text-end">{{ advance.outstanding_amount|floatformat:2 }}</td>
+                        <td>
+                            {% if advance.is_repaid %}
+                                <span class="badge bg-success">تم السداد / Repaid</span>
+                            {% else %}
+                                <span class="badge bg-warning">مستحق / Outstanding</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{% url 'accounts:advance_detail' advance.pk %}" class="btn btn-outline-info" title="عرض / View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if advance.journal_entry %}
+                                <a href="{{ advance.journal_entry.get_absolute_url }}" class="btn btn-outline-secondary" title="القيد المحاسبي / Journal Entry">
+                                    <i class="fas fa-book"></i>
+                                </a>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center text-muted py-5">
+            <i class="fas fa-hand-holding-usd fa-3x mb-3"></i>
+            <h4>لا توجد سلف / No Advances Found</h4>
+            <p>ابدأ بإنشاء سلفة جديدة / Start by creating a new advance</p>
+            <a href="{% url 'accounts:advance_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> إنشاء سلفة جديدة / Create New Advance
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

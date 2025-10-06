@@ -1,0 +1,526 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+{% block content %}
+    <div class="module-header">
+        <h2>إدارة المجموعات الطلابية</h2>
+        <div class="header-actions">
+            <button class="btn btn-primary" id="addGroupBtn">
+                <i class="fas fa-plus"></i> إضافة مجموعة جديدة
+            </button>
+            <button class="btn btn-secondary" id="assignStudentsBtn">
+                <i class="fas fa-user-plus"></i> تعيين طلاب
+            </button>
+        </div>
+    </div>
+    <div class="tabs">
+        <div class="tab active" data-tab="active">المجموعات النشطة</div>
+        <div class="tab" data-tab="archived">المجموعات المؤرشفة</div>
+    </div>
+
+    <div class="filters">
+        <div class="form-row">
+            <div class="form-col">
+                <select id="courseFilter" class="form-control">
+                    <option value="">جميع الدورات</option>
+                    <option value="1">اللغة الإنجليزية - المستوى الأول</option>
+                    <option value="2">الرياضيات - المستوى الثاني</option>
+                </select>
+            </div>
+            <div class="form-col">
+                <select id="teacherFilter" class="form-control">
+                    <option value="">جميع المدرسين</option>
+                    <option value="1">أحمد محمد</option>
+                    <option value="2">سارة علي</option>
+                </select>
+            </div>
+            <div class="form-col">
+                <select id="timeFilter" class="form-control">
+                    <option value="">جميع الأوقات</option>
+                    <option value="morning">صباحية</option>
+                    <option value="evening">مسائية</option>
+                </select>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-content active" id="active-tab">
+        <div class="groups-container">
+            <div class="group-card">
+                <div class="group-header">
+                    <h3>مجموعة A - اللغة الإنجليزية</h3>
+                    <span class="badge morning">صباحية</span>
+                </div>
+                <div class="group-details">
+                    <div class="detail-item">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        <span>أحمد محمد</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-users"></i>
+                        <span>12 طالب</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>الأحد، الثلاثاء، الخميس</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-clock"></i>
+                        <span>9:00 ص - 11:00 ص</span>
+                    </div>
+                </div>
+                <div class="group-actions">
+                    <button class="btn btn-sm btn-info"><i class="fas fa-eye"></i> عرض</button>
+                    <button class="btn btn-sm btn-primary"><i class="fas fa-edit"></i> تعديل</button>
+                    <button class="btn btn-sm btn-danger"><i class="fas fa-archive"></i> أرشفة</button>
+                </div>
+            </div>
+
+            <div class="group-card">
+                <div class="group-header">
+                    <h3>مجموعة B - الرياضيات</h3>
+                    <span class="badge evening">مسائية</span>
+                </div>
+                <div class="group-details">
+                    <div class="detail-item">
+                        <i class="fas fa-chalkboard-teacher"></i>
+                        <span>سارة علي</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-users"></i>
+                        <span>10 طلاب</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>الاثنين، الأربعاء</span>
+                    </div>
+                    <div class="detail-item">
+                        <i class="fas fa-clock"></i>
+                        <span>4:00 م - 6:00 م</span>
+                    </div>
+                </div>
+                <div class="group-actions">
+                    <button class="btn btn-sm btn-info"><i class="fas fa-eye"></i> عرض</button>
+                    <button class="btn btn-sm btn-primary"><i class="fas fa-edit"></i> تعديل</button>
+                    <button class="btn btn-sm btn-danger"><i class="fas fa-archive"></i> أرشفة</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="tab-content" id="archived-tab">
+        <div class="table-container">
+            <table id="archivedGroupsTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>اسم المجموعة</th>
+                        <th>الدورة</th>
+                        <th>المدرس</th>
+                        <th>عدد الطلاب</th>
+                        <th>الفترة</th>
+                        <th>تاريخ الأرشفة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>مجموعة C - اللغة الإنجليزية</td>
+                        <td>اللغة الإنجليزية - المستوى الأول</td>
+                        <td>أحمد محمد</td>
+                        <td>8</td>
+                        <td>مسائية</td>
+                        <td>15/12/2023</td>
+                        <td>
+                            <button class="btn btn-sm btn-info"><i class="fas fa-eye"></i></button>
+                            <button class="btn btn-sm btn-success"><i class="fas fa-recycle"></i> استعادة</button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- نموذج إضافة/تعديل مجموعة -->
+    <div id="groupModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3 id="groupModalTitle">إضافة مجموعة جديدة</h3>
+            <form id="groupForm">
+                <div class="form-row">
+                    <div class="form-col">
+                        <label for="groupName">اسم المجموعة</label>
+                        <input type="text" id="groupName" required>
+                    </div>
+                    <div class="form-col">
+                        <label for="groupCourse">الدورة</label>
+                        <select id="groupCourse" required>
+                            <option value="">اختر الدورة</option>
+                            <option value="1">اللغة الإنجليزية - المستوى الأول</option>
+                            <option value="2">الرياضيات - المستوى الثاني</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <label for="groupTeacher">المدرس</label>
+                        <select id="groupTeacher" required>
+                            <option value="">اختر المدرس</option>
+                            <option value="1">أحمد محمد</option>
+                            <option value="2">سارة علي</option>
+                        </select>
+                    </div>
+                    <div class="form-col">
+                        <label for="groupMaxStudents">الحد الأقصى للطلاب</label>
+                        <input type="number" id="groupMaxStudents" value="15">
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <label for="groupTime">وقت المجموعة</label>
+                        <select id="groupTime" required>
+                            <option value="">اختر الوقت</option>
+                            <option value="morning">صباحية</option>
+                            <option value="evening">مسائية</option>
+                        </select>
+                    </div>
+                    <div class="form-col">
+                        <label for="groupClassroom">القاعة</label>
+                        <select id="groupClassroom">
+                            <option value="">اختر القاعة</option>
+                            <option value="1">القاعة 1</option>
+                            <option value="2">القاعة 2</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <label>أيام الدراسة</label>
+                        <div class="days-checkboxes">
+                            <label><input type="checkbox" name="days" value="sunday"> الأحد</label>
+                            <label><input type="checkbox" name="days" value="monday"> الاثنين</label>
+                            <label><input type="checkbox" name="days" value="tuesday"> الثلاثاء</label>
+                            <label><input type="checkbox" name="days" value="wednesday"> الأربعاء</label>
+                            <label><input type="checkbox" name="days" value="thursday"> الخميس</label>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <label for="groupStartTime">وقت البدء</label>
+                        <input type="time" id="groupStartTime" required>
+                        <label for="groupEndTime">وقت الانتهاء</label>
+                        <input type="time" id="groupEndTime" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <label for="groupStartDate">تاريخ البدء</label>
+                        <input type="date" id="groupStartDate" required>
+                    </div>
+                    <div class="form-col">
+                        <label for="groupEndDate">تاريخ الانتهاء</label>
+                        <input type="date" id="groupEndDate" required>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <label for="groupNotes">ملاحظات</label>
+                        <textarea id="groupNotes" rows="3"></textarea>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary cancel-btn">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- نموذج تعيين الطلاب -->
+    <div id="assignStudentsModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>تعيين طلاب للمجموعة</h3>
+            <form id="assignStudentsForm">
+                <div class="form-row">
+                    <div class="form-col">
+                        <label for="assignGroup">المجموعة</label>
+                        <select id="assignGroup" required>
+                            <option value="">اختر المجموعة</option>
+                            <option value="1">مجموعة A - اللغة الإنجليزية</option>
+                            <option value="2">مجموعة B - الرياضيات</option>
+                        </select>
+                    </div>
+                </div>
+
+                <div class="form-row">
+                    <div class="form-col">
+                        <label>الطلاب المتاحين</label>
+                        <div class="students-list-container">
+                            <div class="search-box">
+                                <input type="text" placeholder="ابحث عن طالب...">
+                                <i class="fas fa-search"></i>
+                            </div>
+                            <div class="students-list">
+                                <div class="student-item">
+                                    <input type="checkbox" id="student1" value="1">
+                                    <label for="student1">محمد أحمد - ST-2023-001</label>
+                                </div>
+                                <div class="student-item">
+                                    <input type="checkbox" id="student2" value="2">
+                                    <label for="student2">سارة خالد - ST-2023-002</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <label>الطلاب المسجلين</label>
+                        <div class="assigned-students">
+                            <div class="student-item">
+                                <span>علي محمود - ST-2023-003</span>
+                                <button class="btn btn-sm btn-danger"><i class="fas fa-times"></i></button>
+                            </div>
+                            <div class="student-item">
+                                <span>لمى يوسف - ST-2023-004</span>
+                                <button class="btn btn-sm btn-danger"><i class="fas fa-times"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary cancel-btn">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ التغييرات</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- نموذج عرض المجموعة -->
+    <div id="viewGroupModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>تفاصيل المجموعة</h3>
+            <div class="group-details-view">
+                <div class="detail-row">
+                    <span class="detail-label">اسم المجموعة:</span>
+                    <span class="detail-value">مجموعة A - اللغة الإنجليزية</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">الدورة:</span>
+                    <span class="detail-value">اللغة الإنجليزية - المستوى الأول</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">المدرس:</span>
+                    <span class="detail-value">أحمد محمد</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">أيام الدراسة:</span>
+                    <span class="detail-value">الأحد، الثلاثاء، الخميس</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">الوقت:</span>
+                    <span class="detail-value">9:00 ص - 11:00 ص</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">القاعة:</span>
+                    <span class="detail-value">القاعة 1</span>
+                </div>
+                <div class="detail-row">
+                    <span class="detail-label">عدد الطلاب:</span>
+                    <span class="detail-value">12 / 15</span>
+                </div>
+            </div>
+
+            <div class="group-students-table">
+                <h4>قائمة الطلاب</h4>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>اسم الطالب</th>
+                                <th>رقم الطالب</th>
+                                <th>تاريخ الانضمام</th>
+                                <th>الحالة</th>
+                                <th>الإجراءات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>محمد أحمد</td>
+                                <td>ST-2023-001</td>
+                                <td>01/10/2023</td>
+                                <td><span class="badge active">نشط</span></td>
+                                <td>
+                                    <button class="btn btn-sm btn-info"><i class="fas fa-eye"></i></button>
+                                    <button class="btn btn-sm btn-danger"><i class="fas fa-user-minus"></i></button>
+                                </td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+
+            <div class="group-schedule">
+                <h4>جدول الحصص</h4>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>التاريخ</th>
+                                <th>الوقت</th>
+                                <th>المادة</th>
+                                <th>الحضور</th>
+                                <th>ملاحظات</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            <tr>
+                                <td>1</td>
+                                <td>10/01/2024</td>
+                                <td>9:00 ص - 11:00 ص</td>
+                                <td>الوحدة 1 - القواعد</td>
+                                <td><span class="badge present">10/12</span></td>
+                                <td>-</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Tab switching functionality
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function () {
+                    // Remove active class from all tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+
+                    // Hide all tab contents
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+
+                    // Show the corresponding tab content
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+
+            // Modal handling
+            const groupModal = document.getElementById('groupModal');
+            const assignStudentsModal = document.getElementById('assignStudentsModal');
+            const viewGroupModal = document.getElementById('viewGroupModal');
+
+            // Add Group Button
+            document.getElementById('addGroupBtn').addEventListener('click', function () {
+                document.getElementById('groupModalTitle').textContent = 'إضافة مجموعة جديدة';
+                resetGroupForm();
+                groupModal.style.display = 'block';
+            });
+
+            // Assign Students Button
+            document.getElementById('assignStudentsBtn').addEventListener('click', function () {
+                assignStudentsModal.style.display = 'block';
+            });
+
+            // View Group buttons (using event delegation)
+            document.addEventListener('click', function (e) {
+                if (e.target.closest('.btn-info') && e.target.closest('.group-actions')) {
+                    viewGroupModal.style.display = 'block';
+                }
+            });
+
+            // Close buttons for modals
+            const closeButtons = document.querySelectorAll('.close, .cancel-btn');
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    groupModal.style.display = 'none';
+                    assignStudentsModal.style.display = 'none';
+                    viewGroupModal.style.display = 'none';
+                });
+            });
+
+            // Close modal when clicking outside of it
+            window.addEventListener('click', function (event) {
+                if (event.target === groupModal) {
+                    groupModal.style.display = 'none';
+                }
+                if (event.target === assignStudentsModal) {
+                    assignStudentsModal.style.display = 'none';
+                }
+                if (event.target === viewGroupModal) {
+                    viewGroupModal.style.display = 'none';
+                }
+            });
+
+            // Form submissions
+            document.getElementById('groupForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                alert('تم حفظ بيانات المجموعة بنجاح');
+                groupModal.style.display = 'none';
+                // Here you would typically send data to server
+            });
+
+            document.getElementById('assignStudentsForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                alert('تم تعيين الطلاب للمجموعة بنجاح');
+                assignStudentsModal.style.display = 'none';
+                // Here you would typically send data to server
+            });
+
+            // Archive group buttons (using event delegation)
+            document.addEventListener('click', function (e) {
+                if (e.target.closest('.fa-archive') || e.target.closest('.btn-danger') && e.target.closest('.group-actions')) {
+                    if (confirm('هل أنت متأكد من أرشفة هذه المجموعة؟')) {
+                        alert('تم أرشفة المجموعة بنجاح');
+                        // Here you would typically send request to server
+                    }
+                }
+            });
+
+            // Restore archived group buttons (using event delegation)
+            document.addEventListener('click', function (e) {
+                if (e.target.closest('.fa-recycle') || e.target.closest('.btn-success')) {
+                    if (confirm('هل أنت متأكد من استعادة هذه المجموعة؟')) {
+                        alert('تم استعادة المجموعة بنجاح');
+                        // Here you would typically send request to server
+                    }
+                }
+            });
+
+            // Remove student from group (using event delegation in view modal)
+            document.addEventListener('click', function (e) {
+                if (e.target.closest('.fa-user-minus') || e.target.closest('.btn-danger') && e.target.closest('#viewGroupModal')) {
+                    if (confirm('هل أنت متأكد من إزالة هذا الطالب من المجموعة؟')) {
+                        alert('تم إزالة الطالب من المجموعة بنجاح');
+                        // Here you would typically send request to server
+                    }
+                }
+            });
+
+            // Helper function to reset group form
+            function resetGroupForm() {
+                document.getElementById('groupForm').reset();
+                // Uncheck all days
+                document.querySelectorAll('input[name="days"]').forEach(checkbox => {
+                    checkbox.checked = false;
+                });
+            }
+        });
+    </script>
+{% endblock %}

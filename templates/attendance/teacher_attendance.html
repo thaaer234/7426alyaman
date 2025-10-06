@@ -1,0 +1,60 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+{% block content %}
+<div class="module-header">
+    <div class="header-actions">    
+        <h2>سجل حضور المدرسين</h2>
+        <div class="header-actions">
+            <form method="get" class="d-inline">
+                <select name="teacher" class="form-select d-inline" style="width: auto;" onchange="this.form.submit()">
+                    <option value="">جميع المدرسين</option>
+                    {% for teacher in teachers %}
+                    <option value="{{ teacher.id }}" {% if request.GET.teacher == teacher.id|stringformat:"s" %}selected{% endif %}>
+                        {{ teacher.full_name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </form>
+            <a href="{% url 'attendance:take_teacher_attendance' %}" class="btn btn-primary">
+                <i class="fas fa-clipboard-check"></i> تسجيل حضور جديد
+            </a>
+        </div>
+    </div>
+</div>
+{% include "partials/_alerts.html" %}
+
+<div class="table-container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>التاريخ</th>
+                <th>عدد الحاضرين</th>
+                <th>عدد الغائبين</th>
+                <th>إجمالي الجلسات</th>
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for item in summary %}
+                <tr>
+                    <td>{{ item.date|date:"Y-m-d" }}</td>
+                    <td>{{ item.present_count }}</td>
+                    <td>{{ item.absent_count }}</td>
+                    <td>{{ item.total_sessions }}</td>
+                    <td>
+                        <a href="{% url 'attendance:teacher_attendance_detail' item.date|date:'Y-m-d' %}" class="btn btn-sm btn-info">
+                            <i class="fas fa-eye"></i> عرض التفاصيل
+                        </a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center">لا توجد سجلات حضور</td>
+                </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

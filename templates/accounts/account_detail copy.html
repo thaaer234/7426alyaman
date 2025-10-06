@@ -1,0 +1,232 @@
+{% extends 'accounts/base.html' %}
+
+
+{% load emp_perms %}
+{% block title %}{{ account.code }} - {{ account.display_name }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>{{ account.code }} - {{ account.display_name }}</h2>
+    <div>
+        <a href="{% url 'accounts:account_update' account.pk %}" class="btn btn-primary">
+            <i class="fas fa-edit"></i> تعديل / Edit
+        </a>
+        <a href="{% url 'accounts:ledger' account.pk %}" class="btn btn-outline-secondary">
+            <i class="fas fa-book-open"></i> دفتر الأستاذ / Ledger
+        </a>
+    </div>
+</div>
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">لوحة التحكم / Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'accounts:chart_of_accounts' %}">دليل الحسابات / Chart of Accounts</a></li>
+        <li class="breadcrumb-item active">{{ account.code }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">تفاصيل الحساب / Account Details</h5>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th>رمز الحساب / Code:</th>
+                                <td><strong>{{ account.code }}</strong></td>
+                            </tr>
+                            <tr>
+                                <th>الاسم / Name:</th>
+                                <td>{{ account.name }}</td>
+                            </tr>
+                            {% if account.name_ar %}
+                            <tr>
+                                <th>الاسم بالعربية / Arabic Name:</th>
+                                <td>{{ account.name_ar }}</td>
+                            </tr>
+                            {% endif %}
+                            <tr>
+                                <th>النوع / Type:</th>
+                                <td>
+                                    <span class="badge 
+                                        {% if account.account_type == 'ASSET' %}bg-success
+                                        {% elif account.account_type == 'LIABILITY' %}bg-warning
+                                        {% elif account.account_type == 'EQUITY' %}bg-info
+                                        {% elif account.account_type == 'REVENUE' %}bg-primary
+                                        {% else %}bg-danger
+                                        {% endif %}">
+                                        {{ account.get_account_type_display }}
+                                    </span>
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th>الحساب الأب / Parent:</th>
+                                <td>
+                                    {% if account.parent %}
+                                        <a href="{{ account.parent.get_absolute_url }}">
+                                            {{ account.parent.code }} - {{ account.parent.display_name }}
+                                        </a>
+                                    {% else %}
+                                        <span class="text-muted">لا يوجد / None</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>الرصيد الحالي / Current Balance:</th>
+                                <td>
+                                    <strong class="fs-5">{{ account.get_net_balance|floatformat:2 }}</strong>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>الحالة / Status:</th>
+                                <td>
+                                    {% if account.is_active %}
+                                        <span class="badge bg-success">نشط / Active</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">غير نشط / Inactive</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>تاريخ الإنشاء / Created:</th>
+                                <td>{{ account.created_at|date:"Y-m-d H:i" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                {% if account.description %}
+                <div class="mt-3">
+                    <h6>الوصف / Description:</h6>
+                    <p class="text-muted">{{ account.description }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        {% if account.children.exists %}
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5 class="card-title">الحسابات الفرعية / Sub-Accounts</h5>
+                
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>الرمز / Code</th>
+                                <th>الاسم / Name</th>
+                                <th>الرصيد / Balance</th>
+                                <th>الإجراءات / Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for child in account.children.all %}
+                            <tr>
+                                <td>{{ child.code }}</td>
+                                <td>
+                                    <a href="{{ child.get_absolute_url }}">{{ child.display_name }}</a>
+                                </td>
+                                <td class="text-end">{{ child.get_net_balance|floatformat:2 }}</td>
+                                <td>
+                                    <a href="{{ child.get_absolute_url }}" class="btn btn-sm btn-outline-info">
+                                        <i class="fas fa-eye"></i>
+                                    </a>
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">ملخص الحساب / Account Summary</h5>
+                
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="border rounded p-2 mb-2">
+                            <small class="text-muted">إجمالي المدين / Total Debits</small>
+                            <div class="fw-bold text-success">{{ account.get_debit_balance|floatformat:2 }}</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="border rounded p-2 mb-2">
+                            <small class="text-muted">إجمالي الدائن / Total Credits</small>
+                            <div class="fw-bold text-danger">{{ account.get_credit_balance|floatformat:2 }}</div>
+                        </div>
+                    </div>
+                </div>
+                
+                <div class="text-center">
+                    <div class="border rounded p-2 bg-light">
+                        <small class="text-muted">الرصيد الصافي / Net Balance</small>
+                        <div class="fw-bold fs-5">{{ account.get_net_balance|floatformat:2 }}</div>
+                        {% if account.children.exists %}
+                            <hr>
+                            <small class="text-muted">مع الحسابات الفرعية / With Sub-accounts</small>
+                            <div class="fw-bold text-primary">{{ account.get_total_balance_with_children|floatformat:2 }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5 class="card-title">آخر المعاملات / Recent Transactions</h5>
+                
+                {% if recent_transactions %}
+                    <div class="list-group list-group-flush">
+                        {% for transaction in recent_transactions %}
+                        <div class="list-group-item px-0">
+                            <div class="d-flex justify-content-between align-items-start">
+                                <div class="flex-grow-1">
+                                    <small class="text-muted">{{ transaction.journal_entry.date }}</small>
+                                    <div class="fw-bold">
+                                        <a href="{{ transaction.journal_entry.get_absolute_url }}">
+                                            {{ transaction.journal_entry.reference }}
+                                        </a>
+                                    </div>
+                                    <small>{{ transaction.description|default:transaction.journal_entry.description|truncatechars:30 }}</small>
+                                </div>
+                                <div class="text-end">
+                                    {% if transaction.is_debit %}
+                                        <span class="text-success">+{{ transaction.amount|floatformat:2 }}</span>
+                                    {% else %}
+                                        <span class="text-danger">-{{ transaction.amount|floatformat:2 }}</span>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        {% endfor %}
+                    </div>
+                    
+                    <div class="text-center mt-3">
+                        <a href="{% url 'accounts:ledger' account.pk %}" class="btn btn-sm btn-outline-primary">
+                            عرض جميع المعاملات / View All Transactions
+                        </a>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-3">
+                        <i class="fas fa-receipt fa-2x mb-2"></i>
+                        <p class="mb-0">لا توجد معاملات / No transactions yet</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

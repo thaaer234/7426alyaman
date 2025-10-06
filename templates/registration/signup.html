@@ -1,0 +1,85 @@
+{% load emp_perms %}
+{% comment %} {% extends "base.html" %} {% endcomment %}
+{% load static %}
+{% block content %}
+
+
+    <link rel="stylesheet" href="{% static 'css/style.css' %}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+
+
+<div class="auth-container">
+    <div class="auth-card">
+        <div class="logo">
+            <img src="{% static "img/logo.png" %}" alt="معهد اليمان">
+            <h1>معهد اليمان</h1>
+        </div>
+
+        <form id="signupForm" class="auth-form" method="POST">
+        {% csrf_token %}    
+            <h2>إنشاء حساب جديد</h2>
+        {% include "partials/_alerts.html" %}
+            <div class="form-group">
+                <label for="fullname">الاسم الاول</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="fullname" name="fname" required placeholder="أدخل الاسم الاول">
+                </div>
+            </div>
+            <div class="form-group">
+                <label for="fullname">الاسم الالخير</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-user"></i>
+                    <input type="text" id="fullname" name="lname" required placeholder="أدخل الاسم الاخير">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="email">البريد الإلكتروني</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-envelope"></i>
+                    <input type="email" id="email" name="email" required placeholder="أدخل البريد الإلكتروني">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="username">اسم المستخدم</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-at"></i>
+                    <input type="text" id="username" name="username" required placeholder="أدخل اسم المستخدم">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="password">كلمة المرور</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="password" name="password" required placeholder="أدخل كلمة المرور">
+                    <i class="fas fa-eye toggle-password" onclick="togglePassword('password')"></i>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label for="confirmPassword">تأكيد كلمة المرور</label>
+                <div class="input-with-icon">
+                    <i class="fas fa-lock"></i>
+                    <input type="password" id="confirmPassword" name="copassword" required placeholder="أعد إدخال كلمة المرور">
+                    <i class="fas fa-eye toggle-password" onclick="togglePassword('confirmPassword')"></i>
+                </div>
+            </div>
+
+
+            <button type="submit" name="signup_btn" class="btn btn-primary">
+                <span>إنشاء حساب</span>
+                <i class="fas fa-user-plus"></i>
+            </button>
+
+            <div class="auth-footer">
+                لديك حساب بالفعل؟ <a href="{% url "login" %}">تسجيل الدخول</a>
+            </div>
+
+            <div id="signupError" class="error-message"></div>
+        </form>
+    </div>
+</div>
+{% endblock %}

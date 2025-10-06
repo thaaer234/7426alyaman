@@ -1,0 +1,183 @@
+{% extends 'accounts/base.html' %}
+
+
+{% load emp_perms %}
+{% block title %}إيصال الطالب / Student Receipt - {{ receipt.receipt_number }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>إيصال الطالب / Student Receipt - {{ receipt.receipt_number }}</h2>
+    <div>
+        <a href="{% url 'accounts:student_receipt_print' receipt.pk %}" class="btn btn-primary" target="_blank">
+            <i class="fas fa-print"></i> طباعة / Print
+        </a>
+        <a href="{% url 'accounts:receipts_expenses' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left"></i> العودة / Back
+        </a>
+    </div>
+</div>
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">لوحة التحكم / Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'accounts:receipts_expenses' %}">إيصالات ومصروفات / Receipts & Expenses</a></li>
+        <li class="breadcrumb-item active">{{ receipt.receipt_number }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    {% comment %} <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">تفاصيل الإيصال / Receipt Details</h5>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th>رقم الإيصال / Receipt Number:</th>
+                                <td><strong>{{ receipt.receipt_number }}</strong></td>
+                            </tr>
+                            <tr>
+                                <th>التاريخ / Date:</th>
+                                <td>{{ receipt.date }}</td>
+                            </tr>
+                            <tr>
+                                <th>اسم الطالب / Student Name:</th>
+                                <td><strong>{{ receipt.get_student_name }}</strong></td>
+                            </tr>
+                            <tr>
+                                <th>الطالب / Student:</th>
+                                <td>
+                                    {% if receipt.student %}
+                                        <a href="{% url 'accounts:student_detail' receipt.student.pk %}">
+                                            {{ receipt.student.student_id }} - {{ receipt.student.name }}
+                                        </a>
+                                    {% else %}
+                                        {{ receipt.get_student_name }}
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th>اسم الدورة / Course Name:</th>
+                                <td>
+                                    {% if receipt.course %}
+                                        <a href="{% url 'accounts:course_detail' receipt.course.pk %}">
+                                            <strong>{{ receipt.course.name }}</strong>
+                                        </a>
+                                    {% else %}
+                                        <strong>{{ receipt.get_course_name }}</strong>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>المبلغ / Amount:</th>
+                                <td><strong class="fs-4 text-success">{{ receipt.amount|floatformat:2 }}</strong></td>
+                            </tr>
+                            <tr>
+                                <th>طريقة الدفع / Payment Method:</th>
+                                <td>{{ receipt.get_payment_method_display }}</td>
+                            </tr>
+                            <tr>
+                                <th>حالة الطباعة / Print Status:</th>
+                                <td>
+                                    {% if receipt.is_printed %}
+                                        <span class="badge bg-success">تم الطباعة / Printed</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">لم يتم الطباعة / Not Printed</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                {% if receipt.notes %}
+                <div class="mt-3">
+                    <h6>الملاحظات / Notes:</h6>
+                    <p class="text-muted">{{ receipt.notes }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+    </div> {% endcomment %}
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">معلومات النظام / System Information</h5>
+                
+                <table class="table table-borderless table-sm">
+                    <tr>
+                        <th>أنشأ بواسطة / Created By:</th>
+                        <td>{{ receipt.created_by.get_full_name|default:receipt.created_by.username }}</td>
+                    </tr>
+                    <tr>
+                        <th>تاريخ الإنشاء / Created At:</th>
+                        <td>{{ receipt.created_at|date:"Y-m-d H:i" }}</td>
+                    </tr>
+                    <tr>
+                        <th>القيد المحاسبي / Journal Entry:</th>
+                        <td>
+                            {% if receipt.journal_entry %}
+                                <a href="{{ receipt.journal_entry.get_absolute_url }}">{{ receipt.journal_entry.reference }}</a>
+                            {% else %}
+                                <span class="text-muted">لم يتم إنشاؤه / Not created</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        
+        {% if receipt.journal_entry %}
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5 class="card-title">القيد المحاسبي / Journal Entry</h5>
+                
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>الحساب / Account</th>
+                                <th>مدين / Debit</th>
+                                <th>دائن / Credit</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in receipt.journal_entry.transactions.all %}
+                            <tr>
+                                <td>{{ transaction.account.code }} - {{ transaction.account.display_name }}</td>
+                                <td class="text-end">
+                                    {% if transaction.is_debit %}{{ transaction.amount|floatformat:2 }}{% else %}-{% endif %}
+                                </td>
+                                <td class="text-end">
+                                    {% if not transaction.is_debit %}{{ transaction.amount|floatformat:2 }}{% else %}-{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+</div>
+{% if receipt.enrollment %}
+<div class="mt-4">
+    <form action="{% url 'accounts:enrollment_withdraw' receipt.enrollment.pk %}" method="post" onsubmit="return confirm('تأكيد سحب الطالب من الدورة؟ سيتم إنشاء قيد مالي للإرجاع. / Confirm student withdrawal? A refund journal entry will be created.');">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">
+            <i class="fas fa-user-slash"></i> سحب الطالب من الدورة / Withdraw enrollment
+        </button>
+    </form>
+    <small class="text-muted d-block mt-2">سيتم إنشاء قيد مالي للإرجاع وإقفال الذمم / A refund/reversal journal entry will be posted.</small>
+    </div>
+{% endif %}
+{% endblock %}

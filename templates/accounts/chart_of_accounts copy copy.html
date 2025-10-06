@@ -1,0 +1,147 @@
+{% extends 'accounts/base.html' %}
+
+
+{% load emp_perms %}
+{% block title %}دليل الحسابات / Chart of Accounts{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>دليل الحسابات / Chart of Accounts</h2>
+    <div>
+        <a href="?export=excel" class="btn btn-success">
+            <i class="fas fa-file-excel"></i> تصدير Excel / Export Excel
+        </a>
+        <a href="{% url 'accounts:account_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> حساب جديد / New Account
+        </a>
+    </div>
+</div>
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">لوحة التحكم / Dashboard</a></li>
+        <li class="breadcrumb-item active">دليل الحسابات / Chart of Accounts</li>
+    </ol>
+</nav>
+
+<div class="table-container">
+    {% if accounts %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>رمز الحساب / Code</th>
+                        <th>اسم الحساب / Account Name</th>
+                        <th>النوع / Type</th>
+                        <th>الحساب الأب / Parent</th>
+                        <th>الرصيد / Balance</th>
+                        <th>الحالة / Status</th>
+                        <th>الإجراءات / Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for account in accounts %}
+                    <tr>
+                        <td>
+                            <strong>{{ account.code }}</strong>
+                        </td>
+                        <td>
+                            <a href="{{ account.get_absolute_url }}" class="text-decoration-none">
+                                {{ account.display_name }}
+                            </a>
+                            {% if account.name_ar and account.name_ar != account.name %}
+                                <br>
+                                <small class="text-muted">{{ account.name }}</small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <span class="badge 
+                                {% if account.account_type == 'ASSET' %}bg-success
+                                {% elif account.account_type == 'LIABILITY' %}bg-warning
+                                {% elif account.account_type == 'EQUITY' %}bg-info
+                                {% elif account.account_type == 'REVENUE' %}bg-primary
+                                {% else %}bg-danger
+                                {% endif %}">
+                                {{ account.get_account_type_display }}
+                            </span>
+                        </td>
+                        <td>
+                            {% if account.parent %}
+                                <a href="{{ account.parent.get_absolute_url }}" class="text-decoration-none">
+                                    {{ account.parent.code }} - {{ account.parent.display_name }}
+                                </a>
+                            {% else %}
+                                <span class="text-muted">-</span>
+                            {% endif %}
+                        </td>
+                        <td class="text-end">
+                            <strong class="{% if account.get_net_balance >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                {{ account.get_net_balance|floatformat:2 }}
+                            </strong>
+                            {% if account.children.exists %}
+                                <br>
+                                <small class="text-muted">
+                                    (مع الفروع: {{ account.get_total_balance_with_children|floatformat:2 }})
+                                    <br>
+                                    (With children: {{ account.get_total_balance_with_children|floatformat:2 }})
+                                </small>
+                            {% endif %}
+                        </td>
+                        <td>
+                            {% if account.is_active %}
+                                <span class="badge bg-success">نشط / Active</span>
+                            {% else %}
+                                <span class="badge bg-secondary">غير نشط / Inactive</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{{ account.get_absolute_url }}" class="btn btn-outline-info" title="عرض / View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'accounts:account_update' account.pk %}" class="btn btn-outline-primary" title="تعديل / Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <a href="{% url 'accounts:ledger' account.pk %}" class="btn btn-outline-secondary" title="دفتر الأستاذ / Ledger">
+                                    <i class="fas fa-book-open"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center text-muted py-5">
+            <i class="fas fa-sitemap fa-3x mb-3"></i>
+            <h4>لا توجد حسابات / No Accounts Found</h4>
+            <p>ابدأ بإنشاء حساب جديد / Start by creating a new account</p>
+            <a href="{% url 'accounts:account_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> إنشاء حساب جديد / Create New Account
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">ملخص الحسابات حسب النوع / Account Summary by Type</h5>
+                <div class="row">
+                    {% regroup accounts by account_type as account_groups %}
+                    {% for group in account_groups %}
+                    <div class="col-md-2 text-center">
+                        <div class="border rounded p-3 mb-2">
+                            <h6 class="mb-1">{{ group.grouper|title }}</h6>
+                            <span class="badge bg-secondary">{{ group.list|length }}</span>
+                        </div>
+                    </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

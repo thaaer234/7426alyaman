@@ -1,0 +1,60 @@
+{% extends 'accounts/base.html' %}
+
+{% load emp_perms %}
+{% load crispy_forms_tags %}
+
+{% block title %}سلفة موظف جديدة / New Employee Advance{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>سلفة موظف جديدة / New Employee Advance</h2>
+</div>
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">لوحة التحكم / Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'accounts:advance_list' %}">سلف الموظفين / Employee Advances</a></li>
+        <li class="breadcrumb-item active">سلفة جديدة / New Advance</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {% crispy form %}
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">إرشادات / Guidelines</h5>
+                
+                <div class="mb-3">
+                    <h6>سلفة الموظف / Employee Advance:</h6>
+                    <ul class="list-unstyled small">
+                        <li><i class="fas fa-user text-primary"></i> أدخل اسم الموظف</li>
+                        <li><i class="fas fa-calendar text-success"></i> حدد تاريخ السلفة</li>
+                        <li><i class="fas fa-dollar-sign text-info"></i> أدخل مبلغ السلفة</li>
+                        <li><i class="fas fa-file-alt text-warning"></i> اذكر الغرض من السلفة</li>
+                    </ul>
+                </div>
+                
+                <div class="alert alert-info">
+                    <small>
+                        <i class="fas fa-info-circle"></i>
+                        سيتم إنشاء قيد محاسبي تلقائياً وتسجيل السلفة كأصل متداول
+                        <br>
+                        An accounting entry will be automatically created and the advance recorded as a current asset
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

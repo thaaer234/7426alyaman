@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+{% block content %}
+<style>
+    .stats-container {
+        padding: 20px;
+    }
+    .dashboard-cards {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 20px;
+        margin-bottom: 30px;
+    }
+    .card {
+        background: white;
+        border-radius: 10px;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.1);
+        padding: 25px;
+        text-align: center;
+        transition: transform 0.3s ease, box-shadow 0.3s ease;
+    }
+    .card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 25px rgba(0,0,0,0.15);
+    }
+    .card-title {
+        font-size: 18px;
+        color: #555;
+        margin-bottom: 15px;
+        font-weight: 600;
+    }
+    .card-value {
+        font-size: 42px;
+        font-weight: bold;
+        color: #2c3e50;
+    }
+    .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+        gap: 20px;
+    }
+    .stat-box {
+        background: white;
+        border-radius: 10px;
+        padding: 20px;
+        box-shadow: 0 4px 10px rgba(0,0,0,0.1);
+        text-align: center;
+    }
+    .stat-box h3 {
+        margin: 0 0 10px 0;
+        color: #555;
+        font-size: 16px;
+    }
+    .stat-number {
+        font-size: 28px;
+        font-weight: bold;
+        color: #2c3e50;
+    }
+    .gender-stats, .branch-stats {
+        margin-top: 30px;
+    }
+    .section-title {
+        font-size: 22px;
+        color: #2c3e50;
+        margin-bottom: 20px;
+        padding-bottom: 10px;
+        border-bottom: 2px solid #eee;
+    }
+    .male-color { color: #3498db; }
+    .female-color { color: #e74c3c; }
+    .scientific-color { color: #2ecc71; }
+    .literary-color { color: #f39c12; }
+    .ninth-color { color: #9b59b6; }
+</style>
+
+<div class="stats-container">
+    <h1 class="page-title">إحصائيات الطلاب</h1>
+    
+    <div class="dashboard-cards">
+        <div class="card">
+            <div class="card-title">العدد الإجمالي للطلاب</div>
+            <div class="card-value">{{ students_count }}</div>
+            <p>طالب مسجل في النظام</p>
+        </div>
+    </div>
+    
+    <div class="gender-stats">
+        <h2 class="section-title">التوزيع حسب الجنس</h2>
+        <div class="stats-grid">
+            <div class="stat-box">
+                <h3>الطلاب الذكور</h3>
+                <div class="stat-number male-color">{{ male_count }}</div>
+            </div>
+            <div class="stat-box">
+                <h3>الطالبات الإناث</h3>
+                <div class="stat-number female-color">{{ female_count }}</div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="branch-stats">
+        <h2 class="section-title">التوزيع حسب الفرع الدراسي</h2>
+        <div class="stats-grid">
+            <div class="stat-box">
+                <h3>الفرع العلمي</h3>
+                <div class="stat-number scientific-color">{{ scientific_count }}</div>
+            </div>
+            <div class="stat-box">
+                <h3>الفرع الأدبي</h3>
+                <div class="stat-number literary-color">{{ literary_count }}</div>
+            </div>
+            <div class="stat-box">
+                <h3>الصف التاسع</h3>
+                <div class="stat-number ninth-color">{{ ninth_grade_count }}</div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

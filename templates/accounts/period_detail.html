@@ -1,0 +1,212 @@
+{% extends 'accounts/base.html' %}
+
+
+{% load emp_perms %}
+{% block title %}{{ period.name }} - تفاصيل الفترة المحاسبية / Accounting Period Details{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>{{ period.name }} - تفاصيل الفترة المحاسبية / Accounting Period Details</h2>
+    <div>
+        {% if not period.is_closed %}
+        <a href="{% url 'accounts:period_update' period.pk %}" class="btn btn-primary">
+            <i class="fas fa-edit"></i> تعديل / Edit
+        </a>
+        <form method="post" action="{% url 'accounts:period_close' period.pk %}" class="d-inline">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-warning" 
+                    onclick="return confirm('هل أنت متأكد من إقفال هذه الفترة؟ لا يمكن التراجع عن هذا الإجراء / Are you sure you want to close this period? This action cannot be undone.')">
+                <i class="fas fa-lock"></i> إقفال الفترة / Close Period
+            </button>
+        </form>
+        {% else %}
+        <span class="badge bg-danger fs-6">مقفلة / Closed</span>
+        {% endif %}
+    </div>
+</div>
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">لوحة التحكم / Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'accounts:period_list' %}">الفترات المحاسبية / Accounting Periods</a></li>
+        <li class="breadcrumb-item active">{{ period.name }}</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">معلومات الفترة / Period Information</h5>
+                
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th>اسم الفترة / Period Name:</th>
+                                <td><strong>{{ period.name }}</strong></td>
+                            </tr>
+                            <tr>
+                                <th>تاريخ البداية / Start Date:</th>
+                                <td>{{ period.start_date }}</td>
+                            </tr>
+                            <tr>
+                                <th>تاريخ النهاية / End Date:</th>
+                                <td>{{ period.end_date }}</td>
+                            </tr>
+                            <tr>
+                                <th>المدة / Duration:</th>
+                                <td>{{ period.start_date|timesince:period.end_date }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th>الحالة / Status:</th>
+                                <td>
+                                    {% if period.is_closed %}
+                                        <span class="badge bg-danger">مقفلة / Closed</span>
+                                    {% else %}
+                                        <span class="badge bg-success">مفتوحة / Open</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>فترة حالية / Current Period:</th>
+                                <td>
+                                    {% if period.is_current %}
+                                        <span class="badge bg-primary">نعم / Yes</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">لا / No</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                            {% if period.is_closed %}
+                            <tr>
+                                <th>تاريخ الإقفال / Closed Date:</th>
+                                <td>{{ period.closed_at|date:"Y-m-d H:i" }}</td>
+                            </tr>
+                            <tr>
+                                <th>أقفل بواسطة / Closed By:</th>
+                                <td>{{ period.closed_by.get_full_name|default:period.closed_by.username }}</td>
+                            </tr>
+                            {% endif %}
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5 class="card-title">الميزانيات المرتبطة / Related Budgets</h5>
+                
+                {% with budgets=period.budget_set.all %}
+                {% if budgets %}
+                    <div class="table-responsive">
+                        <table class="table table-sm">
+                            <thead>
+                                <tr>
+                                    <th>الحساب / Account</th>
+                                    <th>المخطط / Budgeted</th>
+                                    <th>الفعلي / Actual</th>
+                                    <th>الانحراف / Variance</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for budget in budgets %}
+                                <tr>
+                                    <td>
+                                        <a href="{% url 'accounts:budget_detail' budget.pk %}">
+                                            {{ budget.account.code }} - {{ budget.account.display_name }}
+                                        </a>
+                                    </td>
+                                    <td class="text-end">{{ budget.budgeted_amount|floatformat:2 }}</td>
+                                    <td class="text-end">{{ budget.actual_amount|floatformat:2 }}</td>
+                                    <td class="text-end {% if budget.variance >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                        {{ budget.variance|floatformat:2 }}
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                {% else %}
+                    <div class="text-center text-muted py-3">
+                        <i class="fas fa-calculator fa-2x mb-2"></i>
+                        <p class="mb-0">لا توجد ميزانيات لهذه الفترة / No budgets for this period</p>
+                        <a href="{% url 'accounts:budget_create' %}" class="btn btn-sm btn-primary mt-2">
+                            <i class="fas fa-plus"></i> إنشاء ميزانية / Create Budget
+                        </a>
+                    </div>
+                {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">إحصائيات الفترة / Period Statistics</h5>
+                
+                {% with journal_entries=period.get_journal_entries %}
+                <div class="row text-center">
+                    <div class="col-6">
+                        <div class="border rounded p-2 mb-2">
+                            <small class="text-muted">القيود / Entries</small>
+                            <div class="fw-bold">{{ journal_entries.count }}</div>
+                        </div>
+                    </div>
+                    <div class="col-6">
+                        <div class="border rounded p-2 mb-2">
+                            <small class="text-muted">الميزانيات / Budgets</small>
+                            <div class="fw-bold">{{ period.budget_set.count }}</div>
+                        </div>
+                    </div>
+                </div>
+                {% endwith %}
+            </div>
+        </div>
+        
+        <div class="card mt-3">
+            <div class="card-body">
+                <h5 class="card-title">إجراءات / Actions</h5>
+                
+                <div class="d-grid gap-2">
+                    {% if not period.is_closed %}
+                    <a href="{% url 'accounts:period_update' period.pk %}" class="btn btn-primary">
+                        <i class="fas fa-edit"></i> تعديل الفترة / Edit Period
+                    </a>
+                    
+                    <a href="{% url 'accounts:budget_create' %}" class="btn btn-outline-success">
+                        <i class="fas fa-plus"></i> إنشاء ميزانية / Create Budget
+                    </a>
+                    
+                    <form method="post" action="{% url 'accounts:period_close' period.pk %}">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-warning w-100" 
+                                onclick="return confirm('هل أنت متأكد من إقفال هذه الفترة؟ / Are you sure you want to close this period?')">
+                            <i class="fas fa-lock"></i> إقفال الفترة / Close Period
+                        </button>
+                    </form>
+                    {% else %}
+                    <div class="alert alert-info">
+                        <i class="fas fa-lock"></i>
+                        هذه الفترة مقفلة ولا يمكن تعديلها
+                        <br>
+                        <small>This period is closed and cannot be modified</small>
+                    </div>
+                    {% endif %}
+                    
+                    <a href="{% url 'accounts:period_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-list"></i> قائمة الفترات / Period List
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

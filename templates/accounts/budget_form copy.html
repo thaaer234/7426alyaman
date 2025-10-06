@@ -1,0 +1,79 @@
+{% extends 'accounts/base.html' %}
+
+{% load emp_perms %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {% if object %}تعديل الميزانية / Edit Budget{% else %}ميزانية جديدة / New Budget{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        {% if object %}
+            تعديل الميزانية / Edit Budget
+        {% else %}
+            ميزانية جديدة / New Budget
+        {% endif %}
+    </h2>
+</div>
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">لوحة التحكم / Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'accounts:budget_list' %}">الميزانيات / Budgets</a></li>
+        <li class="breadcrumb-item active">
+            {% if object %}تعديل / Edit{% else %}جديد / New{% endif %}
+        </li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {% crispy form %}
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">إرشادات / Guidelines</h5>
+                
+                <div class="mb-3">
+                    <h6>أنواع الحسابات للميزانية / Budget Account Types:</h6>
+                    <ul class="list-unstyled small">
+                        <li><span class="badge bg-primary">الإيرادات / Revenue</span> - الدخل المتوقع</li>
+                        <li><span class="badge bg-danger">المصروفات / Expenses</span> - التكاليف المخططة</li>
+                        <li><span class="badge bg-success">الأصول / Assets</span> - الاستثمارات المخططة</li>
+                    </ul>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>نصائح للميزانية / Budget Tips:</h6>
+                    <ul class="list-unstyled small">
+                        <li><i class="fas fa-chart-line text-success"></i> ضع أهدافاً واقعية</li>
+                        <li><i class="fas fa-history text-info"></i> راجع البيانات التاريخية</li>
+                        <li><i class="fas fa-sync text-warning"></i> راقب الانحرافات بانتظام</li>
+                        <li><i class="fas fa-adjust text-primary"></i> اضبط الميزانية حسب الحاجة</li>
+                    </ul>
+                </div>
+                
+                <div class="alert alert-info">
+                    <small>
+                        <i class="fas fa-info-circle"></i>
+                        الميزانية تساعد في التخطيط المالي ومراقبة الأداء
+                        <br>
+                        Budgets help with financial planning and performance monitoring
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

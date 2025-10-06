@@ -1,0 +1,170 @@
+{% extends 'accounts/base.html' %}
+
+
+{% load emp_perms %}
+{% block title %}حذف الحساب / Delete Account - {{ object.code }}{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>حذف الحساب / Delete Account</h2>
+</div>
+<style></style>
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">لوحة التحكم / Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'accounts:chart_of_accounts' %}">دليل الحسابات / Chart of Accounts</a></li>
+        <li class="breadcrumb-item"><a href="{{ object.get_absolute_url }}">{{ object.code }}</a></li>
+        <li class="breadcrumb-item active">حذف / Delete</li>
+    </ol>
+</nav>
+
+<div class="row justify-content-center">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <div class="alert alert-danger">
+                    <i class="fas fa-exclamation-triangle fa-2x mb-3"></i>
+                    <h4>تحذير / Warning</h4>
+                    <p>
+                        هل أنت متأكد من حذف الحساب التالي؟
+                        <br>
+                        Are you sure you want to delete the following account?
+                    </p>
+                </div>
+                
+                <div class="card bg-light">
+                    <div class="card-body">
+                        <h5 class="card-title">{{ object.code }} - {{ object.display_name }}</h5>
+                        
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p><strong>النوع / Type:</strong> 
+                                    <span class="badge 
+                                        {% if object.account_type == 'ASSET' %}bg-success
+                                        {% elif object.account_type == 'LIABILITY' %}bg-warning
+                                        {% elif object.account_type == 'EQUITY' %}bg-info
+                                        {% elif object.account_type == 'REVENUE' %}bg-primary
+                                        {% else %}bg-danger
+                                        {% endif %}">
+                                        {{ object.get_account_type_display }}
+                                    </span>
+                                </p>
+                                
+                                <p><strong>الحساب الأب / Parent:</strong> 
+                                    {% if object.parent %}
+                                        {{ object.parent.code }} - {{ object.parent.display_name }}
+                                    {% else %}
+                                        لا يوجد / None
+                                    {% endif %}
+                                </p>
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <p><strong>الرصيد الحالي / Current Balance:</strong> 
+                                    <span class="fw-bold">{{ object.get_net_balance|floatformat:2 }}</span>
+                                </p>
+                                
+                                <p><strong>الحالة / Status:</strong> 
+                                    {% if object.is_active %}
+                                        <span class="badge bg-success">نشط / Active</span>
+                                    {% else %}
+                                        <span class="badge bg-secondary">غير نشط / Inactive</span>
+                                    {% endif %}
+                                </p>
+                            </div>
+                        </div>
+                        
+                        {% if object.description %}
+                        <p><strong>الوصف / Description:</strong> {{ object.description }}</p>
+                        {% endif %}
+                    </div>
+                </div>
+                
+                <!-- Check for child accounts -->
+                {% if object.children.exists %}
+                <div class="alert alert-warning mt-3">
+                    <i class="fas fa-exclamation-triangle"></i>
+                    <strong>تحذير: يحتوي على حسابات فرعية / Warning: Contains Sub-Accounts</strong>
+                    <br>
+                    هذا الحساب يحتوي على {{ object.children.count }} حساب فرعي. سيتم حذف جميع الحسابات الفرعية أيضاً.
+                    <br>
+                    This account contains {{ object.children.count }} sub-account(s). All sub-accounts will also be deleted.
+                    
+                    <div class="mt-2">
+                        <strong>الحسابات الفرعية / Sub-Accounts:</strong>
+                        <ul class="mb-0">
+                            {% for child in object.children.all %}
+                            <li>{{ child.code }} - {{ child.display_name }}</li>
+                            {% endfor %}
+                        </ul>
+                    </div>
+                </div>
+                {% endif %}
+                
+                <!-- Check for transactions -->
+                {% with transaction_count=object.transaction_set.count %}
+                {% if transaction_count > 0 %}
+                <div class="alert alert-danger mt-3">
+                    <i class="fas fa-ban"></i>
+                    <strong>لا يمكن الحذف / Cannot Delete</strong>
+                    <br>
+                    هذا الحساب يحتوي على {{ transaction_count }} معاملة. لا يمكن حذف الحسابات التي تحتوي على معاملات.
+                    <br>
+                    This account contains {{ transaction_count }} transaction(s). Accounts with transactions cannot be deleted.
+                    <br>
+                    <small>يمكنك إلغاء تفعيل الحساب بدلاً من حذفه / You can deactivate the account instead of deleting it.</small>
+                </div>
+                
+                <div class="text-center">
+                    <a href="{{ object.get_absolute_url }}" class="btn btn-secondary">
+                        <i class="fas fa-arrow-left"></i> العودة / Go Back
+                    </a>
+                    <a href="{% url 'accounts:account_update' object.pk %}" class="btn btn-warning">
+                        <i class="fas fa-edit"></i> إلغاء التفعيل / Deactivate
+                    </a>
+                </div>
+                
+                {% else %}
+                
+                <form method="post" class="mt-4">
+                    {% csrf_token %}
+                    
+                    <div class="form-check mb-3">
+                        <input class="form-check-input" type="checkbox" id="confirm-delete" required>
+                        <label class="form-check-label" for="confirm-delete">
+                            أؤكد أنني أريد حذف هذا الحساب نهائياً
+                            <br>
+                            <small class="text-muted">I confirm that I want to permanently delete this account</small>
+                        </label>
+                    </div>
+                    
+                    <div class="text-center">
+                        <a href="{{ object.get_absolute_url }}" class="btn btn-secondary me-2">
+                            <i class="fas fa-times"></i> إلغاء / Cancel
+                        </a>
+                        <button type="submit" class="btn btn-danger" id="delete-btn" disabled>
+                            <i class="fas fa-trash"></i> حذف نهائياً / Delete Permanently
+                        </button>
+                    </div>
+                </form>
+                
+                {% endif %}
+                {% endwith %}
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const confirmCheckbox = document.getElementById('confirm-delete');
+    const deleteBtn = document.getElementById('delete-btn');
+    
+    if (confirmCheckbox && deleteBtn) {
+        confirmCheckbox.addEventListener('change', function() {
+            deleteBtn.disabled = !this.checked;
+        });
+    }
+});
+</script>
+{% endblock %}

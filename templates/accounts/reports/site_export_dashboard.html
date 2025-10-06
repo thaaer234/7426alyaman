@@ -1,0 +1,258 @@
+{% extends 'base.html' %}
+{% load humanize %}
+{% load site_formatting %}
+
+{% block title %}تصدير شامل للموقع - Comprehensive Site Export{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-download"></i>
+                        تصدير شامل للموقع - Comprehensive Site Export
+                    </h3>
+                    <div class="card-tools">
+                        <a href="{% url 'accounts:financial_reports_dashboard' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i>
+                            العودة للتقارير المالية
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Summary Statistics -->
+                    <div class="row mb-4">
+                        <div class="col-md-2">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body text-center">
+                                    <h4 class="mb-0">{{ total_students|intcomma }}</h4>
+                                    <p class="mb-0">الطلاب</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="card bg-success text-white">
+                                <div class="card-body text-center">
+                                    <h4 class="mb-0">{{ total_teachers|intcomma }}</h4>
+                                    <p class="mb-0">المدرسين</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="card bg-info text-white">
+                                <div class="card-body text-center">
+                                    <h4 class="mb-0">{{ total_courses|intcomma }}</h4>
+                                    <p class="mb-0">الدورات</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body text-center">
+                                    <h4 class="mb-0">{{ total_cost_centers|intcomma }}</h4>
+                                    <p class="mb-0">مراكز التكلفة</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="card bg-danger text-white">
+                                <div class="card-body text-center">
+                                    <h4 class="mb-0">{{ total_transactions|intcomma }}</h4>
+                                    <p class="mb-0">المعاملات</p>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-2">
+                            <div class="card bg-secondary text-white">
+                                <div class="card-body text-center">
+                                    <h4 class="mb-0">Excel</h4>
+                                    <p class="mb-0">التصدير</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Export Options -->
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-file-excel"></i>
+                                        خيارات التصدير الشامل - Comprehensive Export Options
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <!-- Date Range Selection -->
+                                    <form method="get" action="{% url 'accounts:comprehensive_site_export' %}" class="mb-4">
+                                        <div class="row">
+                                            <div class="col-md-4">
+                                                <label for="start_date" class="form-label">من تاريخ:</label>
+                                                <input type="date" class="form-control" id="start_date" name="start_date">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label for="end_date" class="form-label">إلى تاريخ:</label>
+                                                <input type="date" class="form-control" id="end_date" name="end_date">
+                                            </div>
+                                            <div class="col-md-4">
+                                                <label class="form-label">&nbsp;</label>
+                                                <button type="submit" class="btn btn-success btn-block">
+                                                    <i class="fas fa-download"></i>
+                                                    تصدير شامل إلى Excel
+                                                </button>
+                                            </div>
+                                        </div>
+                                    </form>
+
+                                    <!-- Export Description -->
+                                    <div class="alert alert-info">
+                                        <h6><i class="fas fa-info-circle"></i> محتويات التصدير الشامل:</h6>
+                                        <ul class="mb-0">
+                                            <li><strong>تحليل مراكز التكلفة:</strong> جميع مراكز التكلفة مع المصروفات والإيرادات</li>
+                                            <li><strong>التدفق النقدي:</strong> التدفق الداخل والخارج لكل مركز تكلفة</li>
+                                            <li><strong>الدورات والمعلمين:</strong> جميع الدورات مع المعلمين المعينين والرواتب</li>
+                                            <li><strong>الطلاب والتسجيلات:</strong> جميع الطلاب مع تسجيلاتهم ومبالغهم</li>
+                                            <li><strong>المعاملات المالية:</strong> جميع المعاملات المالية مع التفاصيل</li>
+                                        </ul>
+                                    </div>
+
+                                    <!-- Quick Export Buttons -->
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <div class="card border-success">
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-calendar-alt fa-3x text-success mb-3"></i>
+                                                    <h5>الشهر الحالي</h5>
+                                                    <p class="text-muted">تصدير بيانات الشهر الحالي</p>
+                                                    <a href="{% url 'accounts:comprehensive_site_export' %}" class="btn btn-success">
+                                                        <i class="fas fa-download"></i>
+                                                        تصدير الشهر الحالي
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <div class="card border-primary">
+                                                <div class="card-body text-center">
+                                                    <i class="fas fa-history fa-3x text-primary mb-3"></i>
+                                                    <h5>جميع البيانات</h5>
+                                                    <p class="text-muted">تصدير جميع البيانات بدون تصفية</p>
+                                                    <a href="{% url 'accounts:comprehensive_site_export' %}" class="btn btn-primary">
+                                                        <i class="fas fa-download"></i>
+                                                        تصدير جميع البيانات
+                                                    </a>
+                                                </div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-chart-line"></i>
+                                        النشاط الأخير - Recent Activity
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <h6>التسجيلات الأخيرة:</h6>
+                                    {% for enrollment in recent_enrollments %}
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div>
+                                            <small class="text-muted">{{ enrollment.enrollment_date }}</small>
+                                            <br>
+                                            <strong>{{ enrollment.student.name }}</strong>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="text-success">{{ enrollment.total_amount|intcomma }}</span>
+                                            <br>
+                                            <small class="text-muted">{{ enrollment.course.name_ar|default:enrollment.course.name }}</small>
+                                        </div>
+                                    </div>
+                                    {% empty %}
+                                    <p class="text-center text-muted">لا توجد تسجيلات</p>
+                                    {% endfor %}
+                                    
+                                    <hr>
+                                    
+                                    <h6>المعاملات الأخيرة:</h6>
+                                    {% for transaction in recent_transactions %}
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div>
+                                            <small class="text-muted">{{ transaction.journal_entry.date }}</small>
+                                            <br>
+                                            <strong>{{ transaction.account.name_ar|default:transaction.account.name }}</strong>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="{% if transaction.is_debit %}text-danger{% else %}text-success{% endif %}">
+                                                {{ transaction.amount|intcomma }}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    {% empty %}
+                                    <p class="text-center text-muted">لا توجد معاملات</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Export Features -->
+                    <div class="row mt-4">
+                        <div class="col-md-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-star"></i>
+                                        مميزات التصدير الشامل - Comprehensive Export Features
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row">
+                                        <div class="col-md-6">
+                                            <h6>التنسيق والتنسيق:</h6>
+                                            <ul class="list-unstyled">
+                                                <li><i class="fas fa-check text-success"></i> تنسيق احترافي مع ألوان مميزة</li>
+                                                <li><i class="fas fa-check text-success"></i> فواصل الآلاف في جميع الأرقام (3,000,000)</li>
+                                                <li><i class="fas fa-check text-success"></i> رؤوس جداول واضحة ومفهومة</li>
+                                                <li><i class="fas fa-check text-success"></i> صفوف المجاميع في نهاية كل جدول</li>
+                                                <li><i class="fas fa-check text-success"></i> تنسيق العملة مع الفواصل</li>
+                                            </ul>
+                                        </div>
+                                        <div class="col-md-6">
+                                            <h6>الوظائف المتقدمة:</h6>
+                                            <ul class="list-unstyled">
+                                                <li><i class="fas fa-check text-success"></i> تصدير متعدد الأوراق (5 أوراق)</li>
+                                                <li><i class="fas fa-check text-success"></i> تصفية حسب الفترة الزمنية</li>
+                                                <li><i class="fas fa-check text-success"></i> حسابات تلقائية للربح/الخسارة</li>
+                                                <li><i class="fas fa-check text-success"></i> ربط المعلمين بالدورات ومراكز التكلفة</li>
+                                                <li><i class="fas fa-check text-success"></i> تحليل شامل لجميع البيانات</li>
+                                            </ul>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+// Set default dates
+document.addEventListener('DOMContentLoaded', function() {
+    const today = new Date();
+    const firstDay = new Date(today.getFullYear(), today.getMonth(), 1);
+    const lastDay = new Date(today.getFullYear(), today.getMonth() + 1, 0);
+    
+    document.getElementById('start_date').value = firstDay.toISOString().split('T')[0];
+    document.getElementById('end_date').value = lastDay.toISOString().split('T')[0];
+});
+</script>
+{% endblock %}

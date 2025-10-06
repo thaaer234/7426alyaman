@@ -1,0 +1,24 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-danger text-white">
+            <h4>تأكيد حذف المادة</h4>
+        </div>
+        <div class="card-body">
+            <p>هل أنت متأكد من أنك تريد حذف المادة "{{ object.name }}"؟</p>
+            <form method="post">
+                {% csrf_token %}
+                <button type="submit" class="btn btn-danger">
+                    <i class="fas fa-trash"></i> نعم، احذف
+                </button>
+                <a href="{% url 'courses:subject_list' %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> إلغاء
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

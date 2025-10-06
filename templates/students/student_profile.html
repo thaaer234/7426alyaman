@@ -1,0 +1,1508 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+
+{% block content %}
+<div class="student-profile" dir="rtl">
+  <!-- Header Section -->
+  <div class="profile-header">
+    <div class="header-content">
+      <div class="student-avatar">
+        <div class="avatar-placeholder">
+          <i class="fas fa-user-graduate"></i>
+        </div>
+      </div>
+      <div class="student-info">
+        <h1>{{ student.full_name }}</h1>
+        <p class="student-number">{{ student.student_number|default:"لا يوجد رقم طالب" }}</p>
+        <div class="student-status">
+          <span class="status-badge {% if course_enrollments %}active{% else %}inactive{% endif %}">
+            {% if course_enrollments %}نشط{% else %}غير نشط{% endif %}
+          </span>
+        </div>
+      </div>
+      <div class="header-actions">
+        <a id="student-statement-link" class="btn btn-outline-primary" href="{% url 'students:student_statement' student.id %}">
+          <i class="fas fa-file-invoice-dollar"></i>
+          كشف حساب الطالب
+        </a>
+        <a href="{% url 'students:register_course' student.id %}" class="btn btn-success">
+          <i class="fas fa-user-plus"></i>
+          تسجيل في دورة
+        </a>
+        <button id="quick-receipt-btn" class="btn btn-primary" {% if not course_enrollments %}disabled{% endif %}>
+          <i class="fas fa-receipt"></i>
+          إيصال فوري
+        </button>
+        <button id="withdraw-student-btn" class="btn btn-outline-danger" {% if not course_enrollments %}disabled{% endif %}>
+          <i class="fas fa-user-minus"></i>
+          سحب الطالب
+        </button>
+      </div>
+    </div>
+  </div>
+
+  <!-- Summary Cards -->
+  <div class="summary-section">
+    <div class="summary-grid">
+      <div class="summary-card">
+        <div class="card-icon">
+          <i class="fas fa-code-branch"></i>
+        </div>
+        <div class="card-content">
+          <span class="card-label">الفرع الدراسي</span>
+          <strong class="card-value">{{ student.get_branch_display|default:"غير محدد" }}</strong>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="card-icon">
+          <i class="fas fa-calendar-alt"></i>
+        </div>
+        <div class="card-content">
+          <span class="card-label">تاريخ التسجيل</span>
+          <strong class="card-value">{{ student.registration_date|date:"Y-m-d" }}</strong>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="card-icon">
+          <i class="fas fa-venus-mars"></i>
+        </div>
+        <div class="card-content">
+          <span class="card-label">الجنس</span>
+          <strong class="card-value">
+            {% if student.gender == 'male' %}ذكر
+            {% elif student.gender == 'female' %}أنثى
+            {% else %}غير محدد
+            {% endif %}
+          </strong>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="card-icon">
+          <i class="fas fa-globe"></i>
+        </div>
+        <div class="card-content">
+          <span class="card-label">الجنسية</span>
+          <strong class="card-value">{{ student.nationality|default:"-" }}</strong>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="card-icon">
+          <i class="fas fa-percentage"></i>
+        </div>
+        <div class="card-content">
+          <span class="card-label">الخصم</span>
+          <strong class="card-value">
+            {{ student.discount_percent|default_if_none:0 }}% / {{ student.discount_amount|default_if_none:0 }}
+          </strong>
+        </div>
+      </div>
+      <div class="summary-card">
+        <div class="card-icon">
+          <i class="fas fa-book-open"></i>
+        </div>
+        <div class="card-content">
+          <span class="card-label">الدورات المسجلة</span>
+          <strong class="card-value">{{ enrollments|length|default:0 }}</strong>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Tabs Navigation -->
+  <div class="tabs-navigation">
+    <div class="tabs-container">
+      <button class="tab-btn active" data-tab="general">
+        <i class="fas fa-user-circle"></i>
+        البيانات العامة
+      </button>
+      <button class="tab-btn" data-tab="academic">
+        <i class="fas fa-graduation-cap"></i>
+        البيانات الأكاديمية
+      </button>
+      <button class="tab-btn" data-tab="finance">
+        <i class="fas fa-coins"></i>
+        الوضع المالي
+      </button>
+      <button class="tab-btn" data-tab="notes">
+        <i class="fas fa-sticky-note"></i>
+        الملاحظات
+      </button>
+    </div>
+  </div>
+
+  <!-- Tabs Content -->
+  <div class="tabs-content">
+    <!-- General Tab -->
+    <div id="general-tab" class="tab-panel active">
+      <div class="tab-grid">
+        <!-- Basic Information -->
+        <div class="info-card">
+          <div class="card-header">
+            <i class="fas fa-id-card"></i>
+            <h3>البيانات الأساسية</h3>
+          </div>
+          <div class="card-body">
+            <div class="info-row">
+              <span class="info-label">الاسم الكامل</span>
+              <span class="info-value">{{ student.full_name }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">تاريخ الميلاد</span>
+              <span class="info-value">{{ student.birth_date|date:"Y-m-d"|default:"-" }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">الرقم الأكاديمي</span>
+              <span class="info-value">{{ student.student_number }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">هاتف المنزل</span>
+              <span class="info-value">{{ student.home_phone|default:"-" }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">العنوان</span>
+              <span class="info-value">{{ student.address|default:"لا يوجد عنوان مسجل" }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Parent Information -->
+        <div class="info-card">
+          <div class="card-header">
+            <i class="fas fa-users"></i>
+            <h3>بيانات أولياء الأمور</h3>
+          </div>
+          <div class="card-body">
+            <div class="info-row">
+              <span class="info-label">اسم الأب</span>
+              <span class="info-value">{{ student.father_name|default:"-" }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">مهنة الأب</span>
+              <span class="info-value">{{ student.father_job|default:"-" }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">هاتف الأب</span>
+              <span class="info-value">{{ student.father_phone|default:"-" }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">اسم الأم</span>
+              <span class="info-value">{{ student.mother_name|default:"-" }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">مهنة الأم</span>
+              <span class="info-value">{{ student.mother_job|default:"-" }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">هاتف الأم</span>
+              <span class="info-value">{{ student.mother_phone|default:"-" }}</span>
+            </div>
+          </div>
+        </div>
+
+        <!-- Additional Information -->
+        <div class="info-card">
+          <div class="card-header">
+            <i class="fas fa-info-circle"></i>
+            <h3>معلومات إضافية</h3>
+          </div>
+          <div class="card-body">
+            <div class="info-row">
+              <span class="info-label">الحالة الصحية</span>
+              <span class="info-value">{{ student.disease|default:"لا توجد حالة صحية مسجلة" }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">المدرسة السابقة</span>
+              <span class="info-value">{{ student.previous_school|default:"-" }}</span>
+            </div>
+            <div class="info-row">
+              <span class="info-label">كيف تعرف علينا</span>
+              <span class="info-value">{{ student.get_how_knew_us_display|default:"-" }}</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Academic Tab -->
+    <div id="academic-tab" class="tab-panel">
+      <div class="tab-section">
+        <div class="section-header">
+          <h3><i class="fas fa-school"></i> الدورات الحالية</h3>
+        </div>
+        {% if enrollments %}
+          <div class="courses-grid">
+            {% for enrollment in enrollments %}
+              <div class="course-card">
+                <div class="course-header">
+                  <h4>{{ enrollment.classroom.name }}</h4>
+                  <span class="course-type">{{ enrollment.classroom.get_class_type_display }}</span>
+                </div>
+                <div class="course-body">
+                  <div class="course-info">
+                    <div class="info-item">
+                      <i class="fas fa-calendar-alt"></i>
+                      <span>تاريخ الالتحاق: {{ enrollment.enrolled_at|date:"Y-m-d" }}</span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            {% endfor %}
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-icon">
+              <i class="fas fa-book-open"></i>
+            </div>
+            <h4>لا توجد صفوف مسجلة حالياً</h4>
+            <p>يمكنك تسجيل الطالب في دورة جديدة باستخدام زر "تسجيل في دورة" أعلاه</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Finance Tab -->
+    <div id="finance-tab" class="tab-panel">
+      <div class="tab-section">
+        <div class="section-header">
+          <h3><i class="fas fa-coins"></i> الوضع المالي</h3>
+        </div>
+        {% if course_enrollments %}
+          <div class="finance-table-container">
+            <table class="finance-table">
+              <thead>
+                <tr>
+                  <th>الدورة</th>
+                  <th>القيمة الصافية</th>
+                  <th>المدفوع</th>
+                  <th>المتبقي</th>
+                  <th>الحالة</th>
+                </tr>
+              </thead>
+              <tbody>
+                {% for enrollment in course_enrollments %}
+                  {% with net=enrollment.net_amount total=enrollment.total_paid|default_if_none:0 %}
+                    <tr>
+                      <td>{{ enrollment.course.name }}</td>
+                      <td>{{ net|default_if_none:0|floatformat:2 }} ل.س</td>
+                      <td>{{ total|floatformat:2 }} ل.س</td>
+                      <td>{{ enrollment.balance_due|default_if_none:0|floatformat:2 }} ل.س</td>
+                      <td>
+                        <span class="payment-status {% if enrollment.balance_due <= 0 %}paid{% else %}pending{% endif %}">
+                          {% if enrollment.balance_due <= 0 %}مسدد{% else %}غير مسدد{% endif %}
+                        </span>
+                      </td>
+                    </tr>
+                  {% endwith %}
+                {% endfor %}
+              </tbody>
+            </table>
+          </div>
+        {% else %}
+          <div class="empty-state">
+            <div class="empty-icon">
+              <i class="fas fa-wallet"></i>
+            </div>
+            <h4>لا توجد بيانات مالية متاحة</h4>
+            <p>لا توجد دورات مسجلة للطالب لعرض بياناتها المالية</p>
+          </div>
+        {% endif %}
+      </div>
+    </div>
+
+    <!-- Notes Tab -->
+    <div id="notes-tab" class="tab-panel">
+      <div class="tab-section">
+        <div class="section-header">
+          <h3><i class="fas fa-sticky-note"></i> الملاحظات</h3>
+        </div>
+        <div class="notes-container">
+          {% if student.notes %}
+            <div class="notes-content">
+              {{ student.notes|linebreaks }}
+            </div>
+          {% else %}
+            <div class="empty-state">
+              <div class="empty-icon">
+                <i class="fas fa-sticky-note"></i>
+              </div>
+              <h4>لا توجد ملاحظات مسجلة</h4>
+              <p>لا توجد ملاحظات خاصة بالطالب في الوقت الحالي</p>
+            </div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- Quick Receipt Modal -->
+<div id="quickReceiptModal" class="modal">
+  <div class="modal-overlay"></div>
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3><i class="fas fa-receipt"></i> إيصال فوري</h3>
+      <button type="button" class="close-btn" data-close>
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="qr-course">اختر الدورة</label>
+        <select id="qr-course" class="form-control">
+          <option value="">-- اختر الدورة --</option>
+          {% for enrollment in course_enrollments %}
+            {% with remaining=enrollment.balance_due %}
+            <option value="{{ enrollment.course.id }}" 
+                    data-price="{{ enrollment.course.price }}" 
+                    data-remaining="{{ remaining }}"
+                    data-enrollment-id="{{ enrollment.id }}">
+              {{ enrollment.course.name }} - المتبقي: {{ remaining|floatformat:2 }} ل.س
+            </option>
+            {% endwith %}
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="qr-date">تاريخ الإيصال</label>
+        <input id="qr-date" type="date" class="form-control" value="{% now 'Y-m-d' %}" max="{% now 'Y-m-d' %}">
+        <small class="form-text">لا يمكن اختيار تاريخ مستقبلي</small>
+      </div>
+      <div class="form-group">
+        <label for="qr-amount">قيمة الدورة</label>
+        <input id="qr-amount" type="number" class="form-control" step="0.01" min="0">
+      </div>
+      <div class="form-row">
+        <div class="form-group">
+          <label for="qr-disc-pct">نسبة الخصم %</label>
+          <input id="qr-disc-pct" type="number" class="form-control" step="0.01" min="0" value="0">
+        </div>
+        <div class="form-group">
+          <label for="qr-disc-amt">قيمة الخصم</label>
+          <input id="qr-disc-amt" type="number" class="form-control" step="0.01" min="0" value="0">
+        </div>
+      </div>
+      <div id="qr-net" class="net-amount" style="display:none"></div>
+      <div class="form-group">
+        <label for="qr-paid">المبلغ المدفوع</label>
+        <input id="qr-paid" type="number" class="form-control" step="0.01" min="0">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button id="qr-cancel" type="button" class="btn btn-outline" data-close>إلغاء</button>
+      <button id="qr-save" type="button" class="btn btn-primary">
+        <i class="fas fa-save"></i>
+        حفظ الإيصال
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- Withdraw Modal -->
+<div id="withdrawModal" class="modal">
+  <div class="modal-overlay"></div>
+  <div class="modal-container">
+    <div class="modal-header">
+      <h3><i class="fas fa-user-minus"></i> سحب الطالب من الدورة</h3>
+      <button type="button" class="close-btn" data-close>
+        <i class="fas fa-times"></i>
+      </button>
+    </div>
+    <div class="modal-body">
+      <div class="form-group">
+        <label for="withdraw-course">اختر الدورة</label>
+        <select id="withdraw-course" class="form-control">
+          <option value="">-- اختر الدورة --</option>
+          {% for enrollment in course_enrollments %}
+            {% with paid=enrollment.total_paid|default_if_none:0 %}
+              <option value="{{ enrollment.id }}" data-paid="{{ paid|floatformat:2 }}" data-course-name="{{ enrollment.course.name }}">
+                {{ enrollment.course.name }} - المسدّد: {{ paid|floatformat:2 }} ل.س
+              </option>
+            {% endwith %}
+          {% endfor %}
+        </select>
+      </div>
+      <div class="form-group">
+        <label for="withdraw-paid">المبلغ المدفوع (للمراجعة فقط)</label>
+        <input id="withdraw-paid" type="number" class="form-control" step="0.01" readonly>
+      </div>
+      <div class="form-group">
+        <label for="withdraw-refund">مبلغ الإرجاع</label>
+        <input id="withdraw-refund" type="number" class="form-control" step="0.01" min="0">
+      </div>
+    </div>
+    <div class="modal-footer">
+      <button id="withdraw-cancel" type="button" class="btn btn-outline" data-close>إلغاء</button>
+      <button id="withdraw-confirm" type="button" class="btn btn-danger">
+        <i class="fas fa-user-minus"></i>
+        تأكيد السحب
+      </button>
+    </div>
+  </div>
+</div>
+
+<style>
+:root {
+  --primary: #1a3a8f;        /* الأزرق الداكن الأساسي من الشعار */
+  --primary-light: #2d5aa9;  /* أزرق متوسط من الشعار */
+  --secondary: #142a6d;      /* أزرق داكن جداً للتكامل */
+  --success: #4cc9f0;        /* أبقيت الأزرق الفاتح للنجاح */
+  --danger: #e63946;         /* أحمر أكثر هدوءاً */
+  --warning: #f8961e;        /* برتقالي دافئ */
+  --info: #4895ef;           /* أزرق معلوماتي */
+  --light: #f8f9fa;          /* فاتح محايد */
+  --dark: #212529;           /* داكن قياسي */
+  --gray: #6c757d;           /* رمادي قياسي */
+  --gray-light: #e9ecef;     /* رمادي فاتح */
+  --border: #dee2e6;         /* لون حدود */
+  --shadow: 0 4px 12px rgba(26, 58, 143, 0.12);  /* ظل بأزرق خفيف */
+  --shadow-lg: 0 10px 30px rgba(26, 58, 143, 0.15); /* ظل كبير بأزرق */
+  --radius: 12px;
+  --radius-sm: 8px;
+  --transition: all 0.3s ease;
+}
+
+* {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+.student-profile {
+  direction: rtl;
+  font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+  color: #333;
+  background: #f8fafc;
+  min-height: 100vh;
+  padding: 20px;
+}
+
+/* Header Styles */
+.profile-header {
+  background: linear-gradient(135deg, var(--primary) 0%, var(--secondary) 100%);
+  border-radius: var(--radius);
+  padding: 30px;
+  margin-bottom: 24px;
+  color: white;
+  box-shadow: var(--shadow);
+}
+
+.header-content {
+  display: flex;
+  align-items: center;
+  gap: 24px;
+  flex-wrap: wrap;
+}
+
+.student-avatar {
+  flex-shrink: 0;
+}
+
+.avatar-placeholder {
+  width: 100px;
+  height: 100px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 40px;
+  border: 3px solid rgba(255, 255, 255, 0.3);
+}
+
+.student-info {
+  flex: 1;
+  min-width: 200px;
+}
+
+.student-info h1 {
+  font-size: 28px;
+  margin-bottom: 8px;
+  font-weight: 700;
+}
+
+.student-number {
+  font-size: 16px;
+  opacity: 0.9;
+  margin-bottom: 12px;
+}
+
+.status-badge {
+  display: inline-block;
+  padding: 6px 16px;
+  border-radius: 20px;
+  font-size: 14px;
+  font-weight: 600;
+}
+
+.status-badge.active {
+  background: rgba(76, 201, 240, 0.2);
+  color: #4cc9f0;
+  border: 1px solid rgba(76, 201, 240, 0.4);
+}
+
+.status-badge.inactive {
+  background: rgba(247, 37, 133, 0.2);
+  color: #f72585;
+  border: 1px solid rgba(247, 37, 133, 0.4);
+}
+
+.header-actions {
+  display: flex;
+  gap: 12px;
+  flex-wrap: wrap;
+}
+
+.btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 20px;
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  text-decoration: none;
+  border: none;
+  cursor: pointer;
+  transition: var(--transition);
+  font-size: 14px;
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-primary {
+  background: var(--primary);
+  color: white;
+}
+
+.btn-primary:hover:not(:disabled) {
+  background: var(--secondary);
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.btn-success {
+  background: var(--success);
+  color: white;
+}
+
+.btn-success:hover:not(:disabled) {
+  background: #3aa8d8;
+  transform: translateY(-2px);
+  box-shadow: var(--shadow);
+}
+
+.btn-outline-primary {
+  background: transparent;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.btn-outline-primary:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.1);
+  transform: translateY(-2px);
+}
+
+.btn-outline-danger {
+  background: transparent;
+  color: white;
+  border: 1px solid rgba(255, 255, 255, 0.5);
+}
+
+.btn-outline-danger:hover:not(:disabled) {
+  background: rgba(247, 37, 133, 0.2);
+  transform: translateY(-2px);
+}
+
+/* Summary Section */
+.summary-section {
+  margin-bottom: 24px;
+}
+
+.summary-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 16px;
+}
+
+.summary-card {
+  background: white;
+  border-radius: var(--radius);
+  padding: 20px;
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  box-shadow: var(--shadow);
+  transition: var(--transition);
+}
+
+.summary-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow-lg);
+}
+
+.card-icon {
+  width: 50px;
+  height: 50px;
+  border-radius: 50%;
+  background: var(--primary-light);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 20px;
+  flex-shrink: 0;
+}
+
+.card-content {
+  flex: 1;
+}
+
+.card-label {
+  display: block;
+  font-size: 14px;
+  color: var(--gray);
+  margin-bottom: 4px;
+}
+
+.card-value {
+  font-size: 18px;
+  font-weight: 700;
+  color: var(--dark);
+}
+
+/* Tabs Navigation */
+.tabs-navigation {
+  margin-bottom: 24px;
+}
+
+.tabs-container {
+  display: flex;
+  background: white;
+  border-radius: var(--radius);
+  padding: 8px;
+  box-shadow: var(--shadow);
+  overflow-x: auto;
+}
+
+.tab-btn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 20px;
+  border: none;
+  background: transparent;
+  border-radius: var(--radius-sm);
+  cursor: pointer;
+  transition: var(--transition);
+  font-weight: 600;
+  color: var(--gray);
+  white-space: nowrap;
+}
+
+.tab-btn.active {
+  background: var(--primary);
+  color: white;
+}
+
+.tab-btn:hover:not(.active) {
+  background: var(--gray-light);
+}
+
+/* Tabs Content */
+.tabs-content {
+  background: white;
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow: hidden;
+}
+
+.tab-panel {
+  display: none;
+  padding: 0;
+}
+
+.tab-panel.active {
+  display: block;
+}
+
+.tab-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+  gap: 24px;
+  padding: 24px;
+}
+
+.info-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.card-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 16px 20px;
+  background: var(--light);
+  border-bottom: 1px solid var(--border);
+}
+
+.card-header i {
+  color: var(--primary);
+  font-size: 18px;
+}
+
+.card-header h3 {
+  font-size: 18px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.card-body {
+  padding: 20px;
+}
+
+.info-row {
+  display: flex;
+  justify-content: space-between;
+  padding: 12px 0;
+  border-bottom: 1px solid var(--gray-light);
+}
+
+.info-row:last-child {
+  border-bottom: none;
+}
+
+.info-label {
+  font-weight: 600;
+  color: var(--gray);
+}
+
+.info-value {
+  color: var(--dark);
+  text-align: left;
+}
+
+/* Academic Tab */
+.tab-section {
+  padding: 24px;
+}
+
+.section-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 20px;
+}
+
+.section-header h3 {
+  font-size: 20px;
+  font-weight: 600;
+  margin: 0;
+}
+
+.section-header i {
+  color: var(--primary);
+}
+
+.courses-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+  gap: 20px;
+}
+
+.course-card {
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  overflow: hidden;
+  transition: var(--transition);
+}
+
+.course-card:hover {
+  transform: translateY(-4px);
+  box-shadow: var(--shadow);
+}
+
+.course-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 16px 20px;
+  background: var(--light);
+  border-bottom: 1px solid var(--border);
+}
+
+.course-header h4 {
+  margin: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.course-type {
+  background: var(--primary);
+  color: white;
+  padding: 4px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.course-body {
+  padding: 16px 20px;
+}
+
+.course-info {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.info-item {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 14px;
+  color: var(--gray);
+}
+
+.info-item i {
+  width: 16px;
+  text-align: center;
+}
+
+/* Finance Tab */
+.finance-table-container {
+  overflow-x: auto;
+}
+
+.finance-table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+.finance-table th,
+.finance-table td {
+  padding: 16px;
+  text-align: center;
+  border-bottom: 1px solid var(--border);
+}
+
+.finance-table th {
+  background: var(--light);
+  font-weight: 600;
+  color: var(--gray);
+}
+
+.finance-table tr:hover {
+  background: rgba(67, 97, 238, 0.05);
+}
+
+.payment-status {
+  padding: 6px 12px;
+  border-radius: 20px;
+  font-size: 12px;
+  font-weight: 600;
+}
+
+.payment-status.paid {
+  background: rgba(76, 201, 240, 0.2);
+  color: var(--success);
+}
+
+.payment-status.pending {
+  background: rgba(247, 37, 133, 0.2);
+  color: var(--danger);
+}
+
+/* Notes Tab */
+.notes-container {
+  padding: 20px 0;
+}
+
+.notes-content {
+  line-height: 1.8;
+  font-size: 16px;
+  color: var(--dark);
+  white-space: pre-wrap;
+}
+
+/* Empty States */
+.empty-state {
+  text-align: center;
+  padding: 40px 20px;
+  color: var(--gray);
+}
+
+.empty-icon {
+  font-size: 60px;
+  margin-bottom: 20px;
+  color: var(--gray-light);
+}
+
+.empty-state h4 {
+  font-size: 20px;
+  margin-bottom: 12px;
+  color: var(--gray);
+}
+
+.empty-state p {
+  font-size: 16px;
+  max-width: 400px;
+  margin: 0 auto;
+}
+
+/* Modal Styles */
+.modal {
+  display: none;
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 1050;
+  align-items: center;
+  justify-content: center;
+  padding: 20px;
+}
+
+.modal-overlay {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: rgba(0, 0, 0, 0.5);
+}
+
+.modal-container {
+  position: relative;
+  background: white;
+  border-radius: var(--radius);
+  width: 100%;
+  max-width: 500px;
+  box-shadow: var(--shadow-lg);
+  animation: modalFadeIn 0.3s ease;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.modal-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 20px 24px;
+  border-bottom: 1px solid var(--border);
+}
+
+.modal-header h3 {
+  margin: 0;
+  font-size: 20px;
+  font-weight: 600;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 20px;
+  cursor: pointer;
+  color: var(--gray);
+  transition: var(--transition);
+}
+
+.close-btn:hover {
+  color: var(--danger);
+}
+
+.modal-body {
+  padding: 24px;
+}
+
+.modal-footer {
+  display: flex;
+  justify-content: flex-end;
+  gap: 12px;
+  padding: 20px 24px;
+  border-top: 1px solid var(--border);
+}
+
+.btn-outline {
+  background: transparent;
+  color: var(--gray);
+  border: 1px solid var(--border);
+}
+
+.btn-outline:hover {
+  background: var(--gray-light);
+}
+
+.btn-danger {
+  background: var(--danger);
+  color: white;
+}
+
+.btn-danger:hover {
+  background: #e01e6d;
+}
+
+/* Form Styles */
+.form-group {
+  margin-bottom: 20px;
+}
+
+.form-row {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 16px;
+}
+
+.form-group label {
+  display: block;
+  margin-bottom: 8px;
+  font-weight: 600;
+  color: var(--dark);
+}
+
+.form-control {
+  width: 100%;
+  padding: 12px 16px;
+  border: 1px solid var(--border);
+  border-radius: var(--radius-sm);
+  font-size: 16px;
+  transition: var(--transition);
+}
+
+.form-control:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(67, 97, 238, 0.1);
+}
+
+.form-text {
+  display: block;
+  margin-top: 6px;
+  font-size: 14px;
+  color: var(--gray);
+}
+
+.net-amount {
+  padding: 16px;
+  background: var(--light);
+  border-radius: var(--radius-sm);
+  font-weight: 600;
+  text-align: center;
+  margin-bottom: 20px;
+  border: 1px solid var(--border);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+  .student-profile {
+    padding: 12px;
+  }
+  
+  .header-content {
+    flex-direction: column;
+    text-align: center;
+  }
+  
+  .student-info {
+    text-align: center;
+  }
+  
+  .header-actions {
+    justify-content: center;
+  }
+  
+  .summary-grid {
+    grid-template-columns: repeat(auto-fill, minmax(150px, 1fr));
+  }
+  
+  .tab-grid {
+    grid-template-columns: 1fr;
+    padding: 16px;
+  }
+  
+  .courses-grid {
+    grid-template-columns: 1fr;
+  }
+  
+  .form-row {
+    grid-template-columns: 1fr;
+  }
+  
+  .modal-container {
+    margin: 0;
+  }
+  
+  .info-row {
+    flex-direction: column;
+    gap: 4px;
+  }
+  
+  .info-value {
+    text-align: right;
+  }
+}
+
+@media (max-width: 576px) {
+  .profile-header {
+    padding: 20px;
+  }
+  
+  .tabs-container {
+    flex-direction: column;
+  }
+  
+  .tab-btn {
+    justify-content: center;
+  }
+  
+  .finance-table {
+    font-size: 14px;
+  }
+  
+  .finance-table th,
+  .finance-table td {
+    padding: 12px 8px;
+  }
+  
+  .modal-body {
+    padding: 16px;
+  }
+  
+  .modal-footer {
+    padding: 16px;
+    flex-direction: column;
+  }
+  
+  .btn {
+    width: 100%;
+    justify-content: center;
+  }
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', () => {
+  initTabs();
+  initQuickReceipt();
+  initWithdraw();
+});
+
+function initTabs() {
+  const tabButtons = document.querySelectorAll('.tab-btn');
+  const tabPanels = document.querySelectorAll('.tab-panel');
+  
+  tabButtons.forEach(button => {
+    button.addEventListener('click', () => {
+      // Remove active class from all buttons and panels
+      tabButtons.forEach(btn => btn.classList.remove('active'));
+      tabPanels.forEach(panel => panel.classList.remove('active'));
+      
+      // Add active class to clicked button
+      button.classList.add('active');
+      
+      // Show corresponding panel
+      const tabId = button.getAttribute('data-tab');
+      const panel = document.getElementById(`${tabId}-tab`);
+      if (panel) {
+        panel.classList.add('active');
+      }
+    });
+  });
+}
+
+function openModal(modal) {
+  if (!modal) return;
+  modal.style.display = 'flex';
+  document.body.style.overflow = 'hidden';
+}
+
+function closeModal(modal) {
+  if (!modal) return;
+  modal.style.display = 'none';
+  document.body.style.overflow = '';
+}
+
+function getCookie(name) {
+  const value = `; ${document.cookie}`;
+  const parts = value.split(`; ${name}=`);
+  if (parts.length === 2) {
+    return parts.pop().split(';')[0];
+  }
+  return '';
+}
+
+function getCSRFToken() {
+  return getCookie('csrftoken');
+}
+
+function initQuickReceipt() {
+  const modal = document.getElementById('quickReceiptModal');
+  const openBtn = document.getElementById('quick-receipt-btn');
+  const saveBtn = document.getElementById('qr-save');
+  const cancelEls = modal ? modal.querySelectorAll('[data-close], #qr-cancel') : [];
+  const courseField = document.getElementById('qr-course');
+  const amountField = document.getElementById('qr-amount');
+  const paidField = document.getElementById('qr-paid');
+  const discountPercentField = document.getElementById('qr-disc-pct');
+  const discountAmountField = document.getElementById('qr-disc-amt');
+  const netAlert = document.getElementById('qr-net');
+  const dateField = document.getElementById('qr-date');
+  
+  if (!modal || !openBtn || !saveBtn) return;
+
+  const defaults = {
+    percent: parseFloat('{{ student.discount_percent|default_if_none:0 }}') || 0,
+    amount: parseFloat('{{ student.discount_amount|default_if_none:0 }}') || 0,
+  };
+
+  const applyDefaults = () => {
+    if (discountPercentField) discountPercentField.value = defaults.percent.toString();
+    if (discountAmountField) discountAmountField.value = defaults.amount.toString();
+  };
+
+  const updateNet = () => {
+    const price = parseFloat(amountField?.value || '0') || 0;
+    const percent = parseFloat(discountPercentField?.value || '0') || 0;
+    const amount = parseFloat(discountAmountField?.value || '0') || 0;
+    const net = Math.max(0, price - (price * (percent / 100)) - amount);
+    
+    if (netAlert) {
+      if (price === 0) {
+        netAlert.style.display = 'none';
+      } else {
+        netAlert.style.display = 'block';
+        netAlert.textContent = 'الصافي بعد الخصومات: ' + net.toFixed(2) + ' ل.س';
+      }
+    }
+    
+    if (paidField) {
+      const selectedOption = courseField?.options?.[courseField.selectedIndex];
+      const remaining = selectedOption ? parseFloat(selectedOption.dataset.remaining || '0') || 0 : net;
+      paidField.value = Math.min(net, remaining || net).toFixed(2);
+    }
+  };
+
+  openBtn.addEventListener('click', (event) => {
+    event.preventDefault();
+    if (openBtn.disabled) {
+      alert('لا توجد دورات متاحة لقطع إيصال');
+      return;
+    }
+    openModal(modal);
+    applyDefaults();
+    updateNet();
+  });
+
+  if (cancelEls) {
+    cancelEls.forEach((el) => {
+      el.addEventListener('click', (event) => {
+        event.preventDefault();
+        closeModal(modal);
+      });
+    });
+  }
+
+  if (courseField) {
+    courseField.addEventListener('change', () => {
+      const option = courseField.options[courseField.selectedIndex];
+      if (option && option.value) {
+        amountField.value = parseFloat(option.dataset.price || '0').toFixed(2);
+        applyDefaults();
+        updateNet();
+      } else {
+        amountField.value = '';
+        if (paidField) paidField.value = '';
+        if (netAlert) netAlert.style.display = 'none';
+      }
+    });
+  }
+
+  [amountField, discountPercentField, discountAmountField].forEach((field) => {
+    if (field) field.addEventListener('input', updateNet);
+  });
+
+  saveBtn.addEventListener('click', async (event) => {
+    event.preventDefault();
+
+    if (!paidField || !paidField.value || parseFloat(paidField.value) <= 0) {
+      alert('يرجى إدخال مبلغ مدفوع صالح قبل إنشاء الإيصال.');
+      return;
+    }
+
+    if (!courseField || !courseField.value) {
+      alert('يرجى اختيار الدورة أولاً.');
+      return;
+    }
+
+    const formData = new FormData();
+    const selectedOption = courseField?.options?.[courseField.selectedIndex];
+    
+    if (courseField?.value) { 
+      formData.append('course_id', courseField.value);
+      if (selectedOption?.dataset?.enrollmentId) {
+        formData.append('enrollment_id', selectedOption.dataset.enrollmentId);
+      }
+    }
+    
+    formData.append('amount', amountField?.value || '0');
+    formData.append('paid_amount', paidField?.value || '0');
+    formData.append('discount_percent', discountPercentField?.value || '0');
+    formData.append('discount_amount', discountAmountField?.value || '0');
+    
+    if (dateField && dateField.value) {
+      formData.append('receipt_date', dateField.value);
+    } else {
+      formData.append('receipt_date', new Date().toISOString().split('T')[0]);
+    }
+
+    saveBtn.disabled = true;
+    saveBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري الحفظ...';
+
+    try {
+      const response = await fetch('{% url "students:quick_receipt" student.id %}', {
+        method: 'POST',
+        body: formData,
+        headers: { 
+          'X-CSRFToken': getCSRFToken(),
+          'X-Requested-With': 'XMLHttpRequest'
+        },
+        credentials: 'same-origin',
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (response.ok && data.ok) {
+        closeModal(modal);
+        alert('تم إنشاء الإيصال بنجاح!');
+        if (data.print_url) { 
+          window.open(data.print_url, '_blank'); 
+        }
+        setTimeout(() => window.location.reload(), 800);
+      } else {
+        const errorMsg = data.error || data.message || 'تعذر إنشاء الإيصال';
+        alert('خطأ: ' + errorMsg);
+        console.error('Server error:', data);
+      }
+    } catch (error) {
+      console.error('Quick receipt error:', error);
+      alert('حدث خطأ غير متوقع أثناء إنشاء الإيصال: ' + error.message);
+    } finally {
+      saveBtn.disabled = false;
+      saveBtn.innerHTML = '<i class="fas fa-save"></i> حفظ الإيصال';
+    }
+  });
+}
+
+function initWithdraw() {
+  const modal = document.getElementById('withdrawModal');
+  const openBtn = document.getElementById('withdraw-student-btn');
+  const confirmBtn = document.getElementById('withdraw-confirm');
+  const cancelEls = modal ? modal.querySelectorAll('[data-close], #withdraw-cancel') : [];
+  const courseField = document.getElementById('withdraw-course');
+  const paidField = document.getElementById('withdraw-paid');
+  const refundField = document.getElementById('withdraw-refund');
+  
+  if (!modal || !openBtn || !confirmBtn) return;
+
+  const updateFields = () => {
+    if (!courseField) return;
+    const option = courseField.options[courseField.selectedIndex];
+    const paidValue = option && option.dataset.paid ? parseFloat(option.dataset.paid) || 0 : 0;
+    if (paidField) paidField.value = paidValue.toFixed(2);
+    if (refundField && (!refundField.value || parseFloat(refundField.value) === 0)) {
+      refundField.value = paidValue.toFixed(2);
+    }
+  };
+
+  openBtn.addEventListener('click', (event) => {
+    event.preventDefault();
+    if (openBtn.disabled) return;
+    openModal(modal);
+    if (courseField && courseField.options.length > 1 && !courseField.value) {
+      courseField.selectedIndex = 1;
+    }
+    updateFields();
+  });
+
+  if (cancelEls) {
+    cancelEls.forEach((el) => {
+      el.addEventListener('click', (event) => {
+        event.preventDefault();
+        closeModal(modal);
+      });
+    });
+  }
+
+  if (courseField) {
+    courseField.addEventListener('change', updateFields);
+  }
+
+  confirmBtn.addEventListener('click', async (event) => {
+    event.preventDefault();
+
+    if (!courseField || !courseField.value) {
+      alert('فضلاً اختر الدورة المراد سحب الطالب منها.');
+      return;
+    }
+
+    const enrollmentId = courseField.value;
+    const option = courseField.options[courseField.selectedIndex];
+    const courseName = option.dataset.courseName || 'الدورة';
+    const refundAmount = refundField?.value || '0';
+
+    if (!confirm(`هل أنت متأكد من سحب الطالب من ${courseName}؟`)) return;
+
+    confirmBtn.disabled = true;
+    confirmBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> جاري السحب...';
+
+    try {
+      const formData = new FormData();
+      formData.append('enrollment_id', enrollmentId);
+      formData.append('refund_amount', refundAmount);
+
+      const response = await fetch(`{% url 'students:withdraw_student' student.id %}`, {
+        method: 'POST',
+        headers: { 'X-CSRFToken': getCSRFToken() },
+        credentials: 'same-origin',
+        body: formData,
+      });
+
+      const data = await response.json().catch(() => ({}));
+
+      if (response.ok && (data.ok || data.success)) {
+        alert(data.message || 'تم سحب الطالب بنجاح.');
+        closeModal(modal);
+        setTimeout(() => window.location.reload(), 600);
+      } else {
+        const errorMsg = data.error || data.message || 'تعذر تنفيذ عملية السحب';
+        alert('خطأ: ' + errorMsg);
+      }
+    } catch (error) {
+      console.error('Withdraw error:', error);
+      alert('حدث خطأ أثناء محاولة سحب الطالب.');
+    } finally {
+      confirmBtn.disabled = false;
+      confirmBtn.innerHTML = '<i class="fas fa-user-minus"></i> تأكيد السحب';
+    }
+  });
+}
+</script>
+{% endblock %}

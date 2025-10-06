@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+{% block content %}
+<div class="module-header">
+    <h2>إدارة الإجازات</h2>
+    <a href="{% url 'employ:vacation_create' %}" class="btn btn-primary">
+        <i class="fas fa-plus"></i> تسجيل إجازة جديدة
+    </a>
+</div>
+
+{% include "partials/_alerts.html" %}
+
+<div class="filters">
+    <form method="GET" action="{% url 'employ:vacation_list' %}">
+        <div class="form-row">
+            <div class="form-col">
+                <input type="text" name="employee_name" class="form-control" 
+                       placeholder="بحث باسم الموظف..." value="{{ request.GET.employee_name }}">
+            </div>
+            <div class="form-col">
+                <input type="date" name="start_date" class="form-control" 
+                       placeholder="من تاريخ" value="{{ request.GET.start_date }}">
+            </div>
+            <div class="form-col">
+                <input type="date" name="end_date" class="form-control" 
+                       placeholder="إلى تاريخ" value="{{ request.GET.end_date }}">
+            </div>
+            <div class="form-col">
+                <button type="submit" class="btn btn-primary">بحث</button>
+                <a href="{% url 'employ:vacation_list' %}" class="btn btn-secondary">إعادة تعيين</a>
+            </div>
+        </div>
+    </form>
+</div>
+
+<div class="table-container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>اسم الموظف</th>
+                <th>نوع الإجازة</th>
+                <th>من تاريخ</th>
+                <th>إلى تاريخ</th>
+                <th>الحالة</th>
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for vacation in vacations %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ vacation.employee.user.get_full_name }}</td>
+                <td>{{ vacation.get_vacation_type_display }}</td>
+                <td>{{ vacation.start_date|date:"Y-m-d" }}</td>
+                <td>{{ vacation.end_date|date:"Y-m-d" }}</td>
+                <td>
+                    <span class="badge badge-{% if vacation.status == 'موافق' %}success{% elif vacation.status == 'غير موافق' %}danger{% else %}warning{% endif %}">
+                        {{ vacation.get_status_display }}
+                    </span>
+                </td>
+                <td>
+                    <a href="{% url 'employ:vacation_update' vacation.id %}" class="btn btn-sm btn-info">
+                        <i class="fas fa-edit"></i>
+                    </a>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center">لا توجد إجازات مسجلة</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+.filters {
+    margin-bottom: 20px;
+    padding: 15px;
+    background: #f9f9f9;
+    border-radius: 5px;
+}
+
+.form-row {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 15px;
+    align-items: end;
+}
+
+.form-col {
+    flex: 1;
+    min-width: 200px;
+}
+
+.badge {
+    padding: 5px 10px;
+    border-radius: 4px;
+    font-size: 12px;
+}
+
+.badge-success { background: #28a745; color: white; }
+.badge-warning { background: #ffc107; color: black; }
+.badge-danger { background: #dc3545; color: white; }
+</style>
+{% endblock %}

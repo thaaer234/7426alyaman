@@ -1,0 +1,183 @@
+{% extends 'accounts/base.html' %}
+
+
+{% load emp_perms %}
+{% block title %}قيود اليومية / Journal Entries{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>قيود اليومية / Journal Entries</h2>
+    <div>
+        <a href="?export=excel" class="btn btn-success" style="background-color: #2ecc71;">
+            <i class="fas fa-file-excel"></i> تصدير Excel / Export Excel
+        </a>
+        <a href="{% url 'accounts:journal_entry_create' %}" class="btn btn-primary" style="background-color: #3498db;">
+            <i class="fas fa-plus" ></i> قيد جديد / New Entry
+        </a>
+    </div>
+</div>
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">لوحة التحكم / Dashboard</a></li>
+        <li class="breadcrumb-item active">قيود اليومية / Journal Entries</li>
+    </ol>
+</nav>
+
+<div class="table-container">
+    {% if journal_entries %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>المرجع / Reference</th>
+                        <th>التاريخ / Date</th>
+                        <th>الوصف / Description</th>
+                        <th>المبلغ / Amount</th>
+                        <th>الحالة / Status</th>
+                        <th>أنشأ بواسطة / Created By</th>
+                        <th>الإجراءات / Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for entry in journal_entries %}
+                    <tr>
+                        <td>
+                            <a href="{{ entry.get_absolute_url }}" class="text-decoration-none fw-bold">
+                                {{ entry.reference }}
+                            </a>
+                        </td>
+                        <td>{{ entry.date }}</td>
+                        <td>{{ entry.description|truncatechars:50 }}</td>
+                        <td class="text-end">
+                            <strong>{{ entry.total_amount|floatformat:2 }}</strong>
+                        </td>
+                        <td>
+                            {% if entry.is_posted %}
+                                <span class="badge bg-success">مرحل / Posted</span>
+                            {% else %}
+                                <span class="badge bg-warning">غير مرحل / Unposted</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ entry.created_by.get_full_name|default:entry.created_by.username }}</td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{{ entry.get_absolute_url }}" class="btn btn-outline-info" title="عرض / View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                
+                                {% if not entry.is_posted %}
+                                <a href="{% url 'accounts:journal_entry_update' entry.pk %}" class="btn btn-outline-primary" title="تعديل / Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                
+                                <form method="post" action="{% url 'accounts:journal_entry_post' entry.pk %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-success" title="ترحيل / Post" 
+                                            onclick="return confirm('هل أنت متأكد من ترحيل هذا القيد؟ / Are you sure you want to post this entry?')">
+                                        <i class="fas fa-check"></i>
+                                    </button>
+                                </form>
+                                {% else %}
+                                <span class="btn btn-outline-secondary btn-sm disabled" title="مرحل / Posted">
+                                    <i class="fas fa-lock"></i>
+                                </span>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        
+        <!-- Pagination -->
+        {% if is_paginated %}
+        <nav aria-label="Page navigation">
+            <ul class="pagination justify-content-center">
+                {% if page_obj.has_previous %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page=1">الأولى / First</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.previous_page_number }}">السابقة / Previous</a>
+                    </li>
+                {% endif %}
+                
+                <li class="page-item active">
+                    <span class="page-link">
+                        صفحة {{ page_obj.number }} من {{ page_obj.paginator.num_pages }}
+                        <br>
+                        Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}
+                    </span>
+                </li>
+                
+                {% if page_obj.has_next %}
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.next_page_number }}">التالية / Next</a>
+                    </li>
+                    <li class="page-item">
+                        <a class="page-link" href="?page={{ page_obj.paginator.num_pages }}">الأخيرة / Last</a>
+                    </li>
+                {% endif %}
+            </ul>
+        </nav>
+        {% endif %}
+        
+    {% else %}
+        <div class="text-center text-muted py-5">
+            <i class="fas fa-book fa-3x mb-3"></i>
+            <h4>لا توجد قيود يومية / No Journal Entries Found</h4>
+            <p>ابدأ بإنشاء قيد يومية جديد / Start by creating a new journal entry</p>
+            <a href="{% url 'accounts:journal_entry_create' %}" class="btn btn-primary" style="background-color: #3498db;">
+                <i class="fas fa-plus"></i> إنشاء قيد جديد / Create New Entry
+            </a>
+        </div>
+    {% endif %}
+</div>
+
+<div class="row mt-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">ملخص سريع / Quick Summary</h5>
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="border rounded p-3">
+                            <h6 class="text-muted">إجمالي القيود / Total Entries</h6>
+                            <div class="fs-4 fw-bold">{{ journal_entries|length }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border rounded p-3">
+                            <h6 class="text-muted">قيود مرحلة / Posted Entries</h6>
+                            <div class="fs-4 fw-bold text-success">
+                                {{ journal_entries|length|add:"-1"|add:"1" }}
+                                {% comment %}This is a placeholder - you'd calculate this in the view{% endcomment %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border rounded p-3">
+                            <h6 class="text-muted">قيود غير مرحلة / Unposted Entries</h6>
+                            <div class="fs-4 fw-bold text-warning">
+                                0
+                                {% comment %}This is a placeholder - you'd calculate this in the view{% endcomment %}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border rounded p-3">
+                            <h6 class="text-muted">هذا الشهر / This Month</h6>
+                            <div class="fs-4 fw-bold text-info">
+                                0
+                                {% comment %}This is a placeholder - you'd calculate this in the view{% endcomment %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

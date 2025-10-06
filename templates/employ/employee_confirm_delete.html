@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+
+
+{% load emp_perms %}
+{% block content %}
+<div class="confirmation-container">
+    <h2>تأكيد الحذف</h2>
+    <p>هل أنت متأكد من أنك تريد حذف الموظف "{{ object.user.get_full_name }}"?</p>
+    
+    <form method="post">
+        {% csrf_token %}
+        <button type="submit" class="btn btn-danger">نعم، احذف</button>
+        <a href="{% url 'employ:hr' %}" class="btn btn-secondary">إلغاء</a>
+    </form>
+</div>
+{% endblock %}

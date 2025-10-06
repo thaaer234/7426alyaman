@@ -1,0 +1,233 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+
+{% block content %}
+<div class="module-header">
+    <h2>تفاصيل السلفة - {{ advance.advance_number }}</h2>
+    <div class="header-actions">
+        <a href="{% url 'employ:employee_advance_list' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> العودة للقائمة
+        </a>
+        {% if advance.journal_entry %}
+        <a href="{% url 'accounts:journal_entry_detail' advance.journal_entry.pk %}" class="btn btn-info">
+            <i class="fas fa-book"></i> القيد المحاسبي
+        </a>
+        {% endif %}
+    </div>
+</div>
+
+{% include "partials/_alerts.html" %}
+
+<div class="row">
+    <div class="col-md-8">
+        <!-- تفاصيل السلفة -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title">معلومات السلفة</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th>رقم السلفة:</th>
+                                <td><strong>{{ advance.advance_number }}</strong></td>
+                            </tr>
+                            <tr>
+                                <th>الموظف:</th>
+                                <td>
+                                    <strong>{{ advance.employee.user.get_full_name }}</strong>
+                                    <br>
+                                    <small class="text-muted">{{ advance.employee.get_position_display }}</small>
+                                </td>
+                            </tr>
+                            <tr>
+                                <th>نوع السلفة:</th>
+                                <td>{{ advance.get_advance_type_display }}</td>
+                            </tr>
+                            <tr>
+                                <th>التاريخ:</th>
+                                <td>{{ advance.date|date:"Y-m-d" }}</td>
+                            </tr>
+                        </table>
+                    </div>
+                    
+                    <div class="col-md-6">
+                        <table class="table table-borderless">
+                            <tr>
+                                <th>المبلغ:</th>
+                                <td><strong class="fs-4 text-success">{{ advance.amount|floatformat:2 }} ل.س</strong></td>
+                            </tr>
+                            <tr>
+                                <th>المبلغ المسدد:</th>
+                                <td><strong class="text-info">{{ advance.repaid_amount|floatformat:2 }} ل.س</strong></td>
+                            </tr>
+                            <tr>
+                                <th>المبلغ المتبقي:</th>
+                                <td><strong class="text-warning">{{ advance.outstanding_amount|floatformat:2 }} ل.س</strong></td>
+                            </tr>
+                            <tr>
+                                <th>الحالة:</th>
+                                <td>
+                                    {% if advance.is_repaid %}
+                                        <span class="badge bg-success">تم السداد</span>
+                                    {% else %}
+                                        <span class="badge bg-warning">معلق</span>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        </table>
+                    </div>
+                </div>
+                
+                <div class="mt-3">
+                    <h6>الغرض من السلفة:</h6>
+                    <p class="text-muted">{{ advance.purpose }}</p>
+                </div>
+                
+                {% if advance.notes %}
+                <div class="mt-3">
+                    <h6>ملاحظات:</h6>
+                    <p class="text-muted">{{ advance.notes }}</p>
+                </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- تسديد السلفة -->
+        {% if not advance.is_repaid and advance.outstanding_amount > 0 %}
+        <div class="card">
+            <div class="card-header bg-warning text-white">
+                <h5 class="card-title mb-0">تسديد السلفة</h5>
+            </div>
+            <div class="card-body">
+                <form method="post" action="{% url 'employ:employee_advance_repay' advance.pk %}">
+                    {% csrf_token %}
+                    <div class="row">
+                        <div class="col-md-6">
+                            <label for="repayment_amount" class="form-label">مبلغ السداد (ل.س)</label>
+                            <input type="number" step="0.01" min="0.01" max="{{ advance.outstanding_amount }}" 
+                                   name="repayment_amount" id="repayment_amount" class="form-control" 
+                                   placeholder="أدخل مبلغ السداد" value="{{ advance.outstanding_amount }}">
+                            <small class="form-text text-muted">الحد الأقصى: {{ advance.outstanding_amount|floatformat:2 }} ل.س</small>
+                        </div>
+                        <div class="col-md-6 d-flex align-items-end">
+                            <button type="submit" class="btn btn-success" 
+                                    onclick="return confirm('هل تريد تسجيل هذا السداد؟')">
+                                <i class="fas fa-money-bill-wave"></i> تسجيل السداد
+                            </button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+        </div>
+        {% endif %}
+    </div>
+    
+    <div class="col-md-4">
+        <!-- معلومات النظام -->
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title">معلومات النظام</h5>
+            </div>
+            <div class="card-body">
+                <table class="table table-borderless table-sm">
+                    <tr>
+                        <th>أنشأ بواسطة:</th>
+                        <td>{{ advance.created_by.get_full_name|default:advance.created_by.username }}</td>
+                    </tr>
+                    <tr>
+                        <th>تاريخ الإنشاء:</th>
+                        <td>{{ advance.created_at|date:"Y-m-d H:i" }}</td>
+                    </tr>
+                    <tr>
+                        <th>طريقة الدفع:</th>
+                        <td>{{ advance.get_payment_method_display }}</td>
+                    </tr>
+                    {% if advance.repayment_date %}
+                    <tr>
+                        <th>تاريخ السداد المتوقع:</th>
+                        <td>{{ advance.repayment_date|date:"Y-m-d" }}</td>
+                    </tr>
+                    {% endif %}
+                    {% if advance.repaid_date %}
+                    <tr>
+                        <th>تاريخ السداد الفعلي:</th>
+                        <td>{{ advance.repaid_date|date:"Y-m-d" }}</td>
+                    </tr>
+                    {% endif %}
+                </table>
+            </div>
+        </div>
+
+        <!-- القيود المحاسبية -->
+        {% if advance.journal_entry %}
+        <div class="card mb-4">
+            <div class="card-header">
+                <h5 class="card-title">القيد المحاسبي</h5>
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-sm">
+                        <thead>
+                            <tr>
+                                <th>الحساب</th>
+                                <th>مدين</th>
+                                <th>دائن</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for transaction in advance.journal_entry.transactions.all %}
+                            <tr>
+                                <td>
+                                    <small>{{ transaction.account.code }}</small>
+                                    <br>
+                                    {{ transaction.account.display_name }}
+                                </td>
+                                <td class="text-end">
+                                    {% if transaction.is_debit %}{{ transaction.amount|floatformat:2 }}{% else %}-{% endif %}
+                                </td>
+                                <td class="text-end">
+                                    {% if not transaction.is_debit %}{{ transaction.amount|floatformat:2 }}{% else %}-{% endif %}
+                                </td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+                <div class="text-center mt-3">
+                    <a href="{% url 'accounts:journal_entry_detail' advance.journal_entry.pk %}" class="btn btn-sm btn-outline-primary">
+                        <i class="fas fa-eye"></i> عرض القيد كاملاً
+                    </a>
+                </div>
+            </div>
+        </div>
+        {% endif %}
+
+        <!-- إجراءات سريعة -->
+        <div class="card">
+            <div class="card-header">
+                <h5 class="card-title">إجراءات سريعة</h5>
+            </div>
+            <div class="card-body">
+                <div class="d-grid gap-2">
+                    <a href="{% url 'employ:employee_advance_list' %}" class="btn btn-outline-secondary">
+                        <i class="fas fa-list"></i> قائمة السلف
+                    </a>
+                    <a href="{% url 'employ:employee_advance_create' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-plus"></i> سلفة جديدة
+                    </a>
+                    <a href="{% url 'employ:hr' %}" class="btn btn-outline-info">
+                        <i class="fas fa-users"></i> إدارة الموظفين
+                    </a>
+                    <a href="{% url 'accounts:dashboard' %}" class="btn btn-outline-success">
+                        <i class="fas fa-chart-bar"></i> النظام المحاسبي
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

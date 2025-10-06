@@ -1,0 +1,23 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+
+{% block content %}
+
+<form method="post" action="{% url 'employ:select_employee' %}">
+    {% csrf_token %}
+    <div class="form-row">
+        <div class="form-col">
+            <label for="employee_id">اختر الموظف:</label>
+            <select name="employee_id" id="employee_id" class="form-control" required>
+                {% for employee in employees %}
+                    <option value="{{ employee.id }}">{{ employee.user.get_full_name }} ({{ employee.get_position_display }})</option>
+                {% endfor %}
+            </select>
+        </div>
+    </div>
+    <button type="submit" class="btn btn-primary">تعديل البيانات</button>
+</form>
+
+{% endblock %}

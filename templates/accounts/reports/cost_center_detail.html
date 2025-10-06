@@ -1,0 +1,230 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}تفاصيل مركز التكلفة - Cost Center Detail{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-building"></i>
+                        تفاصيل مركز التكلفة: {{ cost_center.name_ar|default:cost_center.name }}
+                    </h3>
+                    <div class="card-tools">
+                        <a href="{% url 'accounts:cost_center_analysis' %}" class="btn btn-secondary">
+                            <i class="fas fa-arrow-left"></i>
+                            العودة للتقارير
+                        </a>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <!-- Cost Center Information -->
+                    <div class="row mb-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">معلومات المركز</h5>
+                                </div>
+                                <div class="card-body">
+                                    <table class="table table-borderless">
+                                        <tr>
+                                            <td><strong>الرمز:</strong></td>
+                                            <td>{{ cost_center.code }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>الاسم:</strong></td>
+                                            <td>{{ cost_center.name_ar|default:cost_center.name }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>النوع:</strong></td>
+                                            <td>
+                                                <span class="badge badge-info">{{ cost_center.get_cost_center_type_display }}</span>
+                                            </td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>المدير:</strong></td>
+                                            <td>{{ cost_center.manager_name|default:"غير محدد" }}</td>
+                                        </tr>
+                                        <tr>
+                                            <td><strong>الميزانية الشهرية:</strong></td>
+                                            <td class="text-primary">{{ cost_center.monthly_budget|floatformat:2|intcomma }}</td>
+                                        </tr>
+                                    </table>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">الوصف</h5>
+                                </div>
+                                <div class="card-body">
+                                    <p>{{ cost_center.description|default:"لا يوجد وصف" }}</p>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Period Filter -->
+                    <div class="row mb-4">
+                        <div class="col-md-12">
+                            <form method="get" class="form-inline">
+                                <div class="form-group mr-3">
+                                    <label for="start_date" class="mr-2">من تاريخ:</label>
+                                    <input type="date" class="form-control" id="start_date" name="start_date" value="{{ start_date|date:'Y-m-d' }}">
+                                </div>
+                                <div class="form-group mr-3">
+                                    <label for="end_date" class="mr-2">إلى تاريخ:</label>
+                                    <input type="date" class="form-control" id="end_date" name="end_date" value="{{ end_date|date:'Y-m-d' }}">
+                                </div>
+                                <button type="submit" class="btn btn-primary">
+                                    <i class="fas fa-search"></i>
+                                    تصفية
+                                </button>
+                            </form>
+                        </div>
+                    </div>
+
+                    <!-- Period Display -->
+                    <div class="alert alert-info">
+                        <i class="fas fa-calendar"></i>
+                        <strong>الفترة المحددة:</strong> {{ period_display }}
+                    </div>
+
+                    <!-- Transactions Table -->
+                    <div class="card">
+                        <div class="card-header">
+                            <h5 class="card-title">
+                                <i class="fas fa-list"></i>
+                                المعاملات المرتبطة - Related Transactions
+                            </h5>
+                        </div>
+                        <div class="card-body">
+                            <div class="table-responsive">
+                                <table class="table table-striped">
+                                    <thead>
+                                        <tr>
+                                            <th>التاريخ</th>
+                                            <th>المرجع</th>
+                                            <th>الحساب</th>
+                                            <th>الوصف</th>
+                                            <th>المبلغ</th>
+                                            <th>نوع القيد</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody>
+                                        {% for transaction in transactions %}
+                                        <tr>
+                                            <td>{{ transaction.journal_entry.date }}</td>
+                                            <td>{{ transaction.journal_entry.reference }}</td>
+                                            <td>{{ transaction.account.name_ar|default:transaction.account.name }}</td>
+                                            <td>{{ transaction.description }}</td>
+                                            <td class="{% if transaction.is_debit %}text-danger{% else %}text-success{% endif %}">
+                                                {{ transaction.amount|floatformat:2|intcomma }}
+                                            </td>
+                                            <td>
+                                                <span class="badge {% if transaction.is_debit %}badge-danger{% else %}badge-success{% endif %}">
+                                                    {% if transaction.is_debit %}مدين{% else %}دائن{% endif %}
+                                                </span>
+                                            </td>
+                                        </tr>
+                                        {% empty %}
+                                        <tr>
+                                            <td colspan="6" class="text-center text-muted">
+                                                <i class="fas fa-info-circle"></i>
+                                                لا توجد معاملات للفترة المحددة
+                                            </td>
+                                        </tr>
+                                        {% endfor %}
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Teachers and Courses -->
+                    <div class="row mt-4">
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-chalkboard-teacher"></i>
+                                        المدرسون المرتبطون - Associated Teachers
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if teachers %}
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>الاسم</th>
+                                                        <th>الهاتف</th>
+                                                        <th>نوع الراتب</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for teacher in teachers %}
+                                                    <tr>
+                                                        <td>{{ teacher.full_name }}</td>
+                                                        <td>{{ teacher.phone_number }}</td>
+                                                        <td>
+                                                            <span class="badge badge-info">{{ teacher.get_salary_type_display }}</span>
+                                                        </td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    {% else %}
+                                        <p class="text-center text-muted">لا يوجد مدرسون مرتبطون</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-6">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">
+                                        <i class="fas fa-book"></i>
+                                        الدورات المرتبطة - Associated Courses
+                                    </h5>
+                                </div>
+                                <div class="card-body">
+                                    {% if courses %}
+                                        <div class="table-responsive">
+                                            <table class="table table-sm">
+                                                <thead>
+                                                    <tr>
+                                                        <th>اسم الدورة</th>
+                                                        <th>السعر</th>
+                                                        <th>المدة</th>
+                                                    </tr>
+                                                </thead>
+                                                <tbody>
+                                                    {% for course in courses %}
+                                                    <tr>
+                                                        <td>{{ course.name_ar|default:course.name }}</td>
+                                                        <td>{{ course.price|floatformat:2|intcomma }}</td>
+                                                        <td>{{ course.duration_hours|default:"غير محدد" }} ساعة</td>
+                                                    </tr>
+                                                    {% endfor %}
+                                                </tbody>
+                                            </table>
+                                        </div>
+                                    {% else %}
+                                        <p class="text-center text-muted">لا توجد دورات مرتبطة</p>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

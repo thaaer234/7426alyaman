@@ -1,0 +1,195 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-success text-white">
+                    <h4 class="mb-0 text-center">
+                        <i class="fas fa-user-plus me-2"></i>
+                        تسجيل الطالب في دورة جديدة
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <!-- Student Information -->
+                    <div class="alert alert-info">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <strong>الطالب:</strong> {{ student.full_name }}
+                            </div>
+                            <div class="col-md-6">
+                                <strong>رقم الطالب:</strong> {{ student.student_number }}
+                            </div>
+                        </div>
+                        {% if student.discount_percent or student.discount_amount %}
+                        <div class="row mt-2">
+                            <div class="col-12">
+                                <strong>الحسم الافتراضي:</strong>
+                                {% if student.discount_percent %}{{ student.discount_percent }}%{% endif %}
+                                {% if student.discount_amount %}
+                                    {% if student.discount_percent %} + {% endif %}{{ student.discount_amount }} ل.س
+                                {% endif %}
+                                {% if student.discount_reason %} - {{ student.discount_reason }}{% endif %}
+                            </div>
+                        </div>
+                        {% endif %}
+                    </div>
+
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        <!-- تاريخ التسجيل -->
+                        <div class="form-group mb-3">
+                            <label for="enrollment_date" class="form-label">
+                                <i class="fas fa-calendar-alt me-2"></i>
+                                تاريخ التسجيل <span class="text-danger">*</span>
+                            </label>
+                            <input type="date" name="enrollment_date" id="enrollment_date" 
+                                   class="form-control" value="{% now 'Y-m-d' %}" required>
+                            <small class="form-text text-muted">يمكنك اختيار تاريخ تسجيل سابق إذا لزم الأمر</small>
+                        </div>
+
+                        <div class="form-group mb-4">
+                            <label for="course_id" class="form-label">
+                                <i class="fas fa-graduation-cap me-2"></i>
+                                اختر الدورة <span class="text-danger">*</span>
+                            </label>
+                            <select name="course_id" id="course_id" class="form-control" required>
+                                <option value="">-- اختر الدورة --</option>
+                                {% for course in available_courses %}
+                                <option value="{{ course.id }}" data-price="{{ course.price }}">
+                                    {{ course.name }}{% if course.name_ar %} - {{ course.name_ar }}{% endif %}
+                                    ({{ course.price|floatformat:2 }} ل.س)
+                                </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <!-- Course Details Preview -->
+                        <div id="course-details" class="card bg-light" style="display: none;">
+                            <div class="card-body">
+                                <h6 class="card-title">تفاصيل الدورة</h6>
+                                <div class="row">
+                                    <div class="col-md-6">
+                                        <div class="mb-2">
+                                            <strong>السعر الأساسي:</strong>
+                                            <span id="course-price">0.00</span> ل.س
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong>الحسم:</strong>
+                                            <span id="discount-info">
+                                                {% if student.discount_percent %}{{ student.discount_percent }}%{% endif %}
+                                                {% if student.discount_amount %}
+                                                    {% if student.discount_percent %} + {% endif %}{{ student.discount_amount }}
+                                                {% endif %}
+                                            </span>
+                                        </div>
+                                    </div>
+                                    <div class="col-md-6">
+                                        <div class="mb-2">
+                                            <strong>المبلغ النهائي:</strong>
+                                            <span id="final-amount" class="text-success fw-bold">0.00</span> ل.س
+                                        </div>
+                                        <div class="mb-2">
+                                            <strong>تاريخ التسجيل:</strong>
+                                            <span id="enrollment-date-preview" class="badge bg-info">{% now 'Y-m-d' %}</span>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="d-flex justify-content-center gap-3 mt-4">
+                            <button type="submit" class="btn btn-success px-4">
+                                <i class="fas fa-save me-2"></i>
+                                تسجيل في الدورة
+                            </button>
+                            <a href="{% url 'students:student_profile' student.id %}" class="btn btn-secondary px-4">
+                                <i class="fas fa-times me-2"></i>
+                                إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const courseSelect = document.getElementById('course_id');
+    const enrollmentDateInput = document.getElementById('enrollment_date');
+    const courseDetails = document.getElementById('course-details');
+    const coursePriceSpan = document.getElementById('course-price');
+    const finalAmountSpan = document.getElementById('final-amount');
+    const enrollmentDatePreview = document.getElementById('enrollment-date-preview');
+    
+    const studentDiscountPercent = {{ student.discount_percent|default:0 }};
+    const studentDiscountAmount = {{ student.discount_amount|default:0 }};
+    
+    // تحديث معاينة تاريخ التسجيل
+    enrollmentDateInput.addEventListener('change', function() {
+        enrollmentDatePreview.textContent = this.value;
+        updateCourseDetails();
+    });
+    
+    courseSelect.addEventListener('change', updateCourseDetails);
+    
+    function updateCourseDetails() {
+        const selectedOption = courseSelect.options[courseSelect.selectedIndex];
+        
+        if (selectedOption.value) {
+            const coursePrice = parseFloat(selectedOption.dataset.price) || 0;
+            
+            // Calculate final amount after discounts
+            const afterPercent = coursePrice - (coursePrice * (studentDiscountPercent / 100));
+            const finalAmount = Math.max(0, afterPercent - studentDiscountAmount);
+            
+            coursePriceSpan.textContent = coursePrice.toFixed(2);
+            finalAmountSpan.textContent = finalAmount.toFixed(2);
+            
+            // تحديث تاريخ التسجيل في المعاينة
+            enrollmentDatePreview.textContent = enrollmentDateInput.value;
+            
+            courseDetails.style.display = 'block';
+        } else {
+            courseDetails.style.display = 'none';
+        }
+    }
+    
+    // منع اختيار تاريخ مستقبلي
+    enrollmentDateInput.max = new Date().toISOString().split('T')[0];
+});
+</script>
+
+<style>
+.form-group {
+    margin-bottom: 1.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #495057;
+}
+
+.card {
+    border: none;
+    border-radius: 10px;
+}
+
+.card-header {
+    border-radius: 10px 10px 0 0 !important;
+}
+
+.alert-info {
+    border-radius: 8px;
+    border: none;
+}
+</style>
+{% endblock %}

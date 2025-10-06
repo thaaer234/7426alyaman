@@ -1,0 +1,273 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+{% block content %}
+    <div class="module-header">
+        <h2>إدارة الموظفين</h2>
+        <a href="{% url 'employ:employee_register' %}" class="btn btn-primary">
+            <i class="fas fa-user-plus"></i> تسجيل موظف جديد
+        </a>
+    </div>
+        {% include "partials/_alerts.html" %}
+
+    <div class="tabs">
+        <div class="tab active" data-tab="employees">الموظفون النشطون</div>
+    </div>
+
+    <div class="filters">
+        <form method="GET" action="{% url 'employ:hr' %}">
+            <div class="form-row">
+                <div class="form-col">
+                    <select name="position" id="positionFilter" class="form-control">
+                        <option value="">جميع الوظائف</option>
+                        <option value="admin" {% if request.GET.position == 'admin' %}selected{% endif %}>إداري</option>
+                        <option value="accountant" {% if request.GET.position == 'accountant' %}selected{% endif %}>محاسب</option>
+                        <option value="mentor" {% if request.GET.position == 'mentor' %}selected{% endif %}>موجه</option>
+                        <option value="manager" {% if request.GET.position == 'manager' %}selected{% endif %}>مدير</option>
+                        <option value="marketing" {% if request.GET.position == 'marketing' %}selected{% endif %}>تسويق</option>
+                        <option value="reception" {% if request.GET.position == 'reception' %}selected{% endif %}>استقبال</option>
+                    </select>
+                </div>
+                <div class="form-col">
+                    <input type="text" name="search" id="searchInput" class="form-control" 
+                           placeholder="بحث بالاسم..." value="{{ request.GET.search }}">
+                </div>
+                <div class="form-col">
+                    <button type="submit" class="btn btn-primary">بحث</button>
+                    <a href="{% url 'employ:hr' %}" class="btn btn-secondary">إعادة تعيين</a>
+                </div>
+            </div>
+        </form>
+    </div>
+
+    <div class="tab-content active" id="employees-tab">
+        <div class="table-container">
+            <table id="employeesTable" class="table">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>الاسم الكامل</th>
+                        <th>الوظيفة</th>
+                        <th>تاريخ التعيين</th>
+                        <th>الراتب</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for employee in employees %}
+                    <tr>
+                        <td>{{ forloop.counter }}</td>
+                        <td>{{ employee.user.get_full_name }}</td>
+                        <td>{{ employee.get_position_display }}</td>
+                        <td>{{ employee.hire_date|date:"Y-m-d" }}</td>
+                        <td>{{ employee.salary }}</td>
+                        <td>
+                            <a href="{% url 'employ:employee_profile' employee.id %}" class="btn btn-sm btn-secondary">
+                                <i class="fas fa-id-card"></i>
+                            </a>
+                            <a href="{% url 'employ:employee_update' employee.id %}" class="btn btn-sm btn-info">
+                                <i class="fas fa-edit"></i>
+                            </a>
+                            <a href="{% url 'employ:employee_permissions' employee.id %}" class="btn btn-sm btn-warning">
+                                <i class="fas fa-key"></i>
+                            </a>
+                            <button class="btn btn-sm btn-danger delete-btn" data-id="{{ employee.id }}" data-name="{{ employee.user.get_full_name }}">
+                                <i class="fas fa-trash"></i>
+                            </button>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="6" class="text-center">لا يوجد موظفين مسجلين</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+
+    <!-- نموذج تأكيد الحذف -->
+    <div id="deleteModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3>تأكيد الحذف</h3>
+            <p id="delete-confirm-text">هل أنت متأكد من أنك تريد حذف هذا الموظف؟</p>
+            <form id="deleteForm" method="post" action="">
+                {% csrf_token %}
+                <input type="hidden" name="employee_id" id="deleteEmployeeId">
+                <div class="form-buttons">
+                    <button type="submit" class="btn btn-danger">نعم، احذف</button>
+                    <button type="button" class="btn btn-secondary close-delete-modal">إلغاء</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <style>
+        .filters {
+            margin-bottom: 20px;
+            padding: 15px;
+            background: #f9f9f9;
+            border-radius: 5px;
+        }
+        
+        .form-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: end;
+        }
+        
+        .form-col {
+            flex: 1;
+            min-width: 200px;
+        }
+        
+        .table-container {
+            overflow-x: auto;
+        }
+        
+        .table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        
+        .table th, .table td {
+            padding: 12px;
+            text-align: right;
+            border-bottom: 1px solid #ddd;
+        }
+        
+        .table th {
+            background-color: #f2f2f2;
+            font-weight: bold;
+        }
+        
+        .btn {
+            padding: 8px 12px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            text-decoration: none;
+            display: inline-block;
+            text-align: center;
+        }
+        
+        .btn-sm {
+            padding: 5px 8px;
+            font-size: 12px;
+        }
+        
+        .btn-info {
+            background: #17a2b8;
+            color: white;
+        }
+        
+        .btn-danger {
+            background: #dc3545;
+            color: white;
+        }
+        
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+        
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+        
+        .text-center {
+            text-align: center;
+        }
+        
+        /* أنماط النافذة المنبثقة */
+        .modal {
+            display: none;
+            position: fixed;
+            z-index: 1000;
+            left: 0;
+            top: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0,0,0,0.5);
+        }
+        
+        .modal-content {
+            background-color: #fefefe;
+            margin: 10% auto;
+            padding: 20px;
+            border: 1px solid #888;
+            width: 50%;
+            border-radius: 5px;
+            box-shadow: 0 4px 8px rgba(0,0,0,0.1);
+        }
+        
+        .close {
+            color: #aaa;
+            float: left;
+            font-size: 28px;
+            font-weight: bold;
+            cursor: pointer;
+        }
+        
+        .form-buttons {
+            display: flex;
+            gap: 10px;
+            justify-content: left;
+            margin-top: 20px;
+        }
+    </style>
+
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // النافذة المنبثقة للحذف
+        const deleteModal = document.getElementById('deleteModal');
+        const deleteBtns = document.querySelectorAll('.delete-btn');
+        const closeBtn = document.querySelector('.close');
+        const closeDeleteModalBtn = document.querySelector('.close-delete-modal');
+        const deleteForm = document.getElementById('deleteForm');
+        const deleteConfirmText = document.getElementById('delete-confirm-text');
+        const deleteEmployeeId = document.getElementById('deleteEmployeeId');
+        
+        // فتح نافذة تأكيد الحذف
+        deleteBtns.forEach(btn => {
+            btn.addEventListener('click', function() {
+                const employeeId = this.dataset.id;
+                const employeeName = this.dataset.name;
+                
+                deleteConfirmText.textContent = `هل أنت متأكد من أنك تريد حذف الموظف "${employeeName}"؟`;
+                deleteEmployeeId.value = employeeId;
+                deleteForm.action = "{% url 'employ:employee_delete' 0 %}".replace('0', employeeId);
+                
+                deleteModal.style.display = 'block';
+            });
+        });
+        
+        // إغلاق النافذة المنبثقة
+        function closeDeleteModal() {
+            deleteModal.style.display = 'none';
+        }
+        
+        if (closeBtn) closeBtn.addEventListener('click', closeDeleteModal);
+        if (closeDeleteModalBtn) closeDeleteModalBtn.addEventListener('click', closeDeleteModal);
+        
+        // إغلاق النافذة عند النقر خارجها
+        window.addEventListener('click', function(event) {
+            if (event.target === deleteModal) {
+                closeDeleteModal();
+            }
+        });
+        
+        // إرسال نموذج الحذف
+        if (deleteForm) {
+            deleteForm.addEventListener('submit', function(e) {
+                e.preventDefault();
+                this.submit();
+            });
+        }
+    });
+    </script>
+{% endblock %}

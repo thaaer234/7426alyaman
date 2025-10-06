@@ -1,0 +1,591 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+
+{% block content %}
+<div class="module-header">
+    <h2>إدارة صلاحيات الموظف: {{ employee.user.get_full_name|default:employee.user.username }}</h2>
+    <div class="header-actions">
+        <a href="{% url 'employ:employee_profile' employee.pk %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> العودة للملف الشخصي
+        </a>
+        <a href="{% url 'employ:hr' %}" class="btn btn-outline-secondary">
+            <i class="fas fa-users"></i> إدارة الموظفين
+        </a>
+    </div>
+</div>
+
+{% include "partials/_alerts.html" %}
+
+<div class="card">
+    <div class="card-header">
+        <h5 class="card-title">
+            <i class="fas fa-key"></i> 
+            صلاحيات النظام للموظف: {{ employee.user.get_full_name|default:employee.user.username }}
+        </h5>
+        <p class="card-text mb-0">
+            حدد الصلاحيات التي يمكن للموظف الوصول إليها في النظام
+        </p>
+    </div>
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            
+            <div class="row">
+                <!-- إدارة الطلاب / Student Management -->
+                <div class="col-md-4 mb-4">
+                    <div class="permission-group">
+                        <h6 class="permission-group-title">
+                            <i class="fas fa-user-graduate text-primary"></i>
+                            إدارة الطلاب
+                            <button type="button" class="btn btn-sm btn-outline-primary ms-auto group-select" data-group="students" data-action="select">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2 group-select" data-group="students" data-action="clear">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </h6>
+                        {% for perm in permission_groups.students %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   name="permissions" value="{{ perm.code }}" 
+                                   id="perm_{{ perm.code }}"
+                                   {% if perm.is_granted %}checked{% endif %}>
+                            <label class="form-check-label" for="perm_{{ perm.code }}">
+                                {{ perm.label }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- إدارة المدرسين / Teacher Management -->
+                <div class="col-md-4 mb-4">
+                    <div class="permission-group">
+                        <h6 class="permission-group-title">
+                            <i class="fas fa-chalkboard-teacher text-success"></i>
+                            إدارة المدرسين
+                            <button type="button" class="btn btn-sm btn-outline-primary ms-auto group-select" data-group="teachers" data-action="select">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2 group-select" data-group="teachers" data-action="clear">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </h6>
+                        {% for perm in permission_groups.teachers %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   name="permissions" value="{{ perm.code }}" 
+                                   id="perm_{{ perm.code }}"
+                                   {% if perm.is_granted %}checked{% endif %}>
+                            <label class="form-check-label" for="perm_{{ perm.code }}">
+                                {{ perm.label }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- إدارة الحضور / Attendance Management -->
+                <div class="col-md-4 mb-4">
+                    <div class="permission-group">
+                        <h6 class="permission-group-title">
+                            <i class="fas fa-calendar-check text-info"></i>
+                            إدارة الحضور
+                            <button type="button" class="btn btn-sm btn-outline-primary ms-auto group-select" data-group="attendance" data-action="select">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2 group-select" data-group="attendance" data-action="clear">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </h6>
+                        {% for perm in permission_groups.attendance %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   name="permissions" value="{{ perm.code }}" 
+                                   id="perm_{{ perm.code }}"
+                                   {% if perm.is_granted %}checked{% endif %}>
+                            <label class="form-check-label" for="perm_{{ perm.code }}">
+                                {{ perm.label }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <div class="row">
+                <!-- إدارة الشعب / Classroom Management -->
+                <div class="col-md-4 mb-4">
+                    <div class="permission-group">
+                        <h6 class="permission-group-title">
+                            <i class="fas fa-chalkboard text-warning"></i>
+                            إدارة الشعب
+                            <button type="button" class="btn btn-sm btn-outline-primary ms-auto group-select" data-group="classroom" data-action="select">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2 group-select" data-group="classroom" data-action="clear">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </h6>
+                        {% for perm in permission_groups.classroom %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   name="permissions" value="{{ perm.code }}" 
+                                   id="perm_{{ perm.code }}"
+                                   {% if perm.is_granted %}checked{% endif %}>
+                            <label class="form-check-label" for="perm_{{ perm.code }}">
+                                {{ perm.label }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- إدارة العلامات / Grades Management -->
+                <div class="col-md-4 mb-4">
+                    <div class="permission-group">
+                        <h6 class="permission-group-title">
+                            <i class="fas fa-chart-line text-danger"></i>
+                            إدارة العلامات
+                            <button type="button" class="btn btn-sm btn-outline-primary ms-auto group-select" data-group="grades" data-action="select">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2 group-select" data-group="grades" data-action="clear">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </h6>
+                        {% for perm in permission_groups.grades %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   name="permissions" value="{{ perm.code }}" 
+                                   id="perm_{{ perm.code }}"
+                                   {% if perm.is_granted %}checked{% endif %}>
+                            <label class="form-check-label" for="perm_{{ perm.code }}">
+                                {{ perm.label }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <!-- إدارة المواد / Courses Management -->
+                <div class="col-md-4 mb-4">
+                    <div class="permission-group">
+                        <h6 class="permission-group-title">
+                            <i class="fas fa-book text-secondary"></i>
+                            إدارة المواد
+                            <button type="button" class="btn btn-sm btn-outline-primary ms-auto group-select" data-group="courses" data-action="select">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2 group-select" data-group="courses" data-action="clear">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </h6>
+                        {% for perm in permission_groups.courses %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   name="permissions" value="{{ perm.code }}" 
+                                   id="perm_{{ perm.code }}"
+                                   {% if perm.is_granted %}checked{% endif %}>
+                            <label class="form-check-label" for="perm_{{ perm.code }}">
+                                {{ perm.label }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- النظام المحاسبي / Accounting System -->
+            <div class="row">
+                <div class="col-md-12 mb-4">
+                    <div class="permission-group">
+                        <h6 class="permission-group-title">
+                            <i class="fas fa-calculator text-success"></i>
+                            النظام المحاسبي
+                            <button type="button" class="btn btn-sm btn-outline-primary ms-auto group-select" data-group="accounting" data-action="select">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2 group-select" data-group="accounting" data-action="clear">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </h6>
+                        <div class="row">
+                            {% for perm in permission_groups.accounting %}
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" 
+                                            name="permissions" value="{{ perm.code }}" 
+                                            id="perm_{{ perm.code }}"
+                                            {% if perm.is_granted %}checked{% endif %}>
+                                    <label class="form-check-label" for="perm_{{ perm.code }}">
+                                        {{ perm.label }}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- إدارة الموارد البشرية / HR Management -->
+            <div class="row">
+                <div class="col-md-12 mb-4">
+                    <div class="permission-group">
+                        <h6 class="permission-group-title">
+                            <i class="fas fa-users-cog text-warning"></i>
+                            إدارة الموارد البشرية
+                            <button type="button" class="btn btn-sm btn-outline-primary ms-auto group-select" data-group="hr" data-action="select">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2 group-select" data-group="hr" data-action="clear">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </h6>
+                        <div class="row">
+                            {% for perm in permission_groups.hr %}
+                            <div class="col-md-4">
+                                <div class="form-check">
+                                    <input class="form-check-input" type="checkbox" 
+                                            name="permissions" value="{{ perm.code }}" 
+                                            id="perm_{{ perm.code }}"
+                                            {% if perm.is_granted %}checked{% endif %}>
+                                    <label class="form-check-label" for="perm_{{ perm.code }}">
+                                        {{ perm.label }}
+                                    </label>
+                                </div>
+                            </div>
+                            {% endfor %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- إدارة النظام / System Administration + التقارير -->
+            <div class="row">
+                <div class="col-md-6 mb-4">
+                    <div class="permission-group">
+                        <h6 class="permission-group-title">
+                            <i class="fas fa-cogs text-danger"></i>
+                            إدارة النظام
+                            <button type="button" class="btn btn-sm btn-outline-primary ms-auto group-select" data-group="admin" data-action="select">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2 group-select" data-group="admin" data-action="clear">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </h6>
+                        {% for perm in permission_groups.admin %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   name="permissions" value="{{ perm.code }}" 
+                                   id="perm_{{ perm.code }}"
+                                   {% if perm.is_granted %}checked{% endif %}>
+                            <label class="form-check-label" for="perm_{{ perm.code }}">
+                                {{ perm.label }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+
+                <div class="col-md-6 mb-4">
+                    <div class="permission-group">
+                        <h6 class="permission-group-title">
+                            <i class="fas fa-chart-bar text-info"></i>
+                            التقارير والتحليلات
+                            <button type="button" class="btn btn-sm btn-outline-primary ms-auto group-select" data-group="reports" data-action="select">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2 group-select" data-group="reports" data-action="clear">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </h6>
+                        {% for perm in permission_groups.reports %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   name="permissions" value="{{ perm.code }}" 
+                                   id="perm_{{ perm.code }}"
+                                   {% if perm.is_granted %}checked{% endif %}>
+                            <label class="form-check-label" for="perm_{{ perm.code }}">
+                                {{ perm.label }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- صلاحيات إضافية / Additional Permissions -->
+            <div class="row">
+                <div class="col-md-4 mb-4">
+                    <div class="permission-group">
+                        <h6 class="permission-group-title">
+                            <i class="fas fa-graduation-cap text-primary"></i>
+                            إدارة الدورات المحاسبية
+                            <button type="button" class="btn btn-sm btn-outline-primary ms-auto group-select" data-group="course_accounting" data-action="select">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2 group-select" data-group="course_accounting" data-action="clear">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </h6>
+                        {% for perm in permission_groups.course_accounting %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   name="permissions" value="{{ perm.code }}" 
+                                   id="perm_{{ perm.code }}"
+                                   {% if perm.is_granted %}checked{% endif %}>
+                            <label class="form-check-label" for="perm_{{ perm.code }}">
+                                {{ perm.label }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="permission-group">
+                        <h6 class="permission-group-title">
+                            <i class="fas fa-boxes text-secondary"></i>
+                            إدارة المخزون والأصول
+                            <button type="button" class="btn btn-sm btn-outline-primary ms-auto group-select" data-group="inventory" data-action="select">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2 group-select" data-group="inventory" data-action="clear">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </h6>
+                        {% for perm in permission_groups.inventory %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   name="permissions" value="{{ perm.code }}" 
+                                   id="perm_{{ perm.code }}"
+                                   {% if perm.is_granted %}checked{% endif %}>
+                            <label class="form-check-label" for="perm_{{ perm.code }}">
+                                {{ perm.label }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+                
+                <div class="col-md-4 mb-4">
+                    <div class="permission-group">
+                        <h6 class="permission-group-title">
+                            <i class="fas fa-bullhorn text-warning"></i>
+                            إدارة التسويق والجودة
+                            <button type="button" class="btn btn-sm btn-outline-primary ms-auto group-select" data-group="marketing" data-action="select">
+                                <i class="fas fa-check"></i>
+                            </button>
+                            <button type="button" class="btn btn-sm btn-outline-secondary ms-2 group-select" data-group="marketing" data-action="clear">
+                                <i class="fas fa-times"></i>
+                            </button>
+                        </h6>
+                        {% for perm in permission_groups.marketing %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   name="permissions" value="{{ perm.code }}" 
+                                   id="perm_{{ perm.code }}"
+                                   {% if perm.is_granted %}checked{% endif %}>
+                            <label class="form-check-label" for="perm_{{ perm.code }}">
+                                {{ perm.label }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                        {% for perm in permission_groups.quality %}
+                        <div class="form-check">
+                            <input class="form-check-input" type="checkbox" 
+                                   name="permissions" value="{{ perm.code }}" 
+                                   id="perm_{{ perm.code }}"
+                                   {% if perm.is_granted %}checked{% endif %}>
+                            <label class="form-check-label" for="perm_{{ perm.code }}">
+                                {{ perm.label }}
+                            </label>
+                        </div>
+                        {% endfor %}
+                    </div>
+                </div>
+            </div>
+            
+            <div class="text-center mt-4">
+                <button type="submit" class="btn btn-primary px-4">
+                    <i class="fas fa-save"></i> حفظ الصلاحيات
+                </button>
+                <a href="{% url 'employ:employee_profile' employee.pk %}" class="btn btn-secondary px-4">
+                    <i class="fas fa-times"></i> إلغاء
+                </a>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Quick Actions -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h6 class="card-title">إجراءات سريعة</h6>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <button type="button" class="btn btn-outline-success w-100" onclick="selectAllPermissions()">
+                    <i class="fas fa-check-double"></i> تحديد الكل
+                </button>
+            </div>
+            <div class="col-md-3">
+                <button type="button" class="btn btn-outline-danger w-100" onclick="clearAllPermissions()">
+                    <i class="fas fa-times"></i> إلغاء تحديد الكل
+                </button>
+            </div>
+            <div class="col-md-3">
+                <button type="button" class="btn btn-outline-info w-100" onclick="selectBasicPermissions()">
+                    <i class="fas fa-user"></i> صلاحيات أساسية
+                </button>
+            </div>
+            <div class="col-md-3">
+                <button type="button" class="btn btn-outline-warning w-100" onclick="selectManagerPermissions()">
+                    <i class="fas fa-user-tي"></i> صلاحيات إدارية
+                </button>
+            </div>
+            <div class="col-md-3 mt-2">
+                <button type="button" class="btn btn-outline-success w-100" onclick="selectAccountingPermissions()">
+                    <i class="fas fa-calculator"></i> صلاحيات محاسبية
+                </button>
+            </div>
+            <div class="col-md-3 mt-2">
+                <button type="button" class="btn btn-outline-info w-100" onclick="selectReceptionPermissions()">
+                    <i class="fas fa-desk"></i> صلاحيات استقبال
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.permission-group {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 8px;
+    padding: 20px;
+    height: 100%;
+}
+.permission-group-title {
+    color: #495057;
+    font-weight: 600;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 2px solid #e9ecef;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+.form-check {
+    margin-bottom: 10px;
+    padding: 8px 12px;
+    background: white;
+    border-radius: 5px;
+    border: 1px solid #e9ecef;
+    transition: all 0.2s ease;
+}
+.form-check:hover {
+    background: #f1f3f4;
+    border-color: #007bff;
+}
+.form-check-input:checked + .form-check-label {
+    font-weight: 600;
+    color: #007bff;
+}
+.form-check-label {
+    font-size: 14px;
+    margin-bottom: 0;
+    cursor: pointer;
+}
+</style>
+
+<script>
+function selectAllPermissions() {
+    document.querySelectorAll('input[name="permissions"]').forEach(checkbox => {
+        checkbox.checked = true;
+    });
+}
+function clearAllPermissions() {
+    document.querySelectorAll('input[name="permissions"]').forEach(checkbox => {
+        checkbox.checked = false;
+    });
+}
+function selectBasicPermissions() {
+    clearAllPermissions();
+    const basicPermissions = [
+        'students_view', 'students_profile', 'students_receipt',
+        'attendance_view', 'attendance_take', 'attendance_teacher_view',
+        'classroom_view', 'classroom_students', 'grades_view'
+    ];
+    basicPermissions.forEach(permission => {
+        const checkbox = document.getElementById(`perm_${permission}`);
+        if (checkbox) checkbox.checked = true;
+    });
+}
+function selectManagerPermissions() {
+    clearAllPermissions();
+    const managerPermissions = [
+        'students_view', 'students_create', 'students_edit', 'students_profile', 'students_receipt', 'students_register_course',
+        'teachers_view', 'teachers_create', 'teachers_edit', 'teachers_profile', 'teachers_salary', 'teachers_salary_pay',
+        'attendance_view', 'attendance_take', 'attendance_edit', 'attendance_teacher_view', 'attendance_teacher_take',
+        'classroom_view', 'classroom_create', 'classroom_edit', 'classroom_assign', 'classroom_students', 'classroom_subjects',
+        'grades_view', 'grades_edit', 'grades_export', 'grades_print',
+        'accounting_view', 'accounting_receipts', 'accounting_expenses', 'accounting_reports',
+        'hr_view', 'hr_salary', 'hr_advances', 'hr_vacations',
+        'reports_students', 'reports_teachers', 'reports_financial', 'reports_attendance'
+    ];
+    managerPermissions.forEach(permission => {
+        const checkbox = document.getElementById(`perm_${permission}`);
+        if (checkbox) checkbox.checked = true;
+    });
+}
+function selectAccountingPermissions() {
+    clearAllPermissions();
+    const accountingPermissions = [
+        'accounting_dashboard', 'accounting_view', 'accounting_entries', 'accounting_entries_post',
+        'accounting_accounts', 'accounting_accounts_create', 'accounting_reports',
+        'accounting_trial_balance', 'accounting_income_statement', 'accounting_balance_sheet',
+        'accounting_ledger', 'accounting_receipts', 'accounting_receipts_create',
+        'accounting_expenses', 'accounting_expenses_create', 'accounting_budgets',
+        'accounting_periods', 'accounting_cost_centers', 'accounting_outstanding',
+        'accounting_export', 'course_accounting_view', 'course_accounting_create'
+    ];
+    accountingPermissions.forEach(permission => {
+        const checkbox = document.getElementById(`perm_${permission}`);
+        if (checkbox) checkbox.checked = true;
+    });
+}
+function selectReceptionPermissions() {
+    clearAllPermissions();
+    const receptionPermissions = [
+        'students_view', 'students_create', 'students_profile', 'students_receipt', 'students_register_course',
+        'attendance_view', 'attendance_take', 'classroom_view', 'classroom_students',
+        'accounting_receipts', 'accounting_receipts_create', 'accounting_expenses_create',
+        'reports_students', 'reports_attendance'
+    ];
+    receptionPermissions.forEach(permission => {
+        const checkbox = document.getElementById(`perm_${permission}`);
+        if (checkbox) checkbox.checked = true;
+    });
+}
+
+// تحديد/مسح داخل مجموعة محددة
+document.addEventListener('click', (e) => {
+  const btn = e.target.closest('.group-select');
+  if (!btn) return;
+  const group = btn.dataset.group;
+  const action = btn.dataset.action;
+  const groupBox = btn.closest('.permission-group');
+  if (!groupBox) return;
+  groupBox.querySelectorAll('input[type="checkbox"]').forEach(cb => {
+      cb.checked = (action === 'select');
+  });
+});
+</script>
+{% endblock %}

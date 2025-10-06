@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% block content %}
+<div style="max-width:700px;margin:0 auto;background:#fff;padding:24px;border:1px solid #eee">
+  <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:16px">
+    <h2 style="margin:0">إيصال قبض</h2>
+    <button onclick="window.print()" class="btn btn-primary">طباعة</button>
+  </div>
+  <hr/>
+  <div style="display:flex;gap:24px;flex-wrap:wrap">
+    <div><strong>رقم الإيصال:</strong> {{ receipt.receipt_number }}</div>
+    <div><strong>التاريخ:</strong> {{ receipt.date|date:"Y-m-d" }}</div>
+  </div>
+  <div style="margin-top:12px">
+    <strong>الطالب:</strong> {{ receipt.student_name }}
+  </div>
+  <div style="margin-top:6px">
+    <strong>الدورة:</strong> {{ receipt.course_name }}
+  </div>
+  <table class="table" style="margin-top:16px">
+    <thead>
+      <tr><th>الإجمالي</th><th>حسم %</th><th>حسم مبلغ</th><th>الصافي</th><th>طريقة الدفع</th></tr>
+    </thead>
+    <tbody>
+      <tr>
+        <td>{{ receipt.amount }}</td>
+        <td>{{ receipt.discount_percent }}</td>
+        <td>{{ receipt.discount_amount }}</td>
+        <td><strong>{{ receipt.net_amount }}</strong></td>
+        <td>{{ receipt.get_payment_method_display }}</td>
+      </tr>
+    </tbody>
+  </table>
+  {% if receipt.notes %}
+    <div style="margin-top:8px"><strong>ملاحظات:</strong> {{ receipt.notes }}</div>
+  {% endif %}
+  <hr/>
+  <div style="display:flex;justify-content:space-between;margin-top:24px">
+    <div>توقيع الصرّاف: ____________</div>
+    <div>توقيع المستلم: ____________</div>
+  </div>
+</div>
+<style>
+@media print {
+  .btn { display:none !important; }
+  header, nav, footer { display:none !important; }
+}
+</style>
+{% endblock %}

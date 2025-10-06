@@ -1,0 +1,212 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+{% block content %}
+    {% if user.is_authenticated %}
+        <div class="header">
+            <h2 id="pageTitle">لوحة التحكم</h2>
+            <div class="breadcrumb" id="breadcrumb">
+                <span>الصفحة الرئيسية</span>
+            </div>
+        </div>
+        
+        <div id="moduleContent">
+            <div class="dashboard-cards">
+                <div class="card">
+                    <div class="card-title">عدد الطلاب</div>
+                    <div class="card-value" id="studentsCount">{{ students_count }}</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">عدد المدرسين</div>
+                    <div class="card-value" id="teachersCount">{{ teachers_count }}</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">الدخل الشهري</div>
+                    <div class="card-value" id="monthlyIncome">{{ monthly_income }}</div>
+                </div>
+                <div class="card">
+                    <div class="card-title">المصروفات الشهرية</div>
+                    <div class="card-value" id="monthlyExpenses">{{ monthly_expenses }}</div>
+                </div>
+            </div>
+            
+            <div class="filter-section">
+                <h3>تصفية النشاطات</h3>
+                <form method="GET" id="filterForm">
+                    <div class="filter-row">
+                        <div class="filter-group">
+                            <label for="userFilter">المستخدم:</label>
+                            <select name="user" id="userFilter">
+                                <option value="">جميع المستخدمين</option>
+                                {% for user in users %}
+                                    <option value="{{ user.id }}" {% if selected_user == user.id|stringformat:"s" %}selected{% endif %}>
+                                        {{ user.get_full_name|default:user.username }}
+                                    </option>
+                                {% endfor %}
+                            </select>
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="startDate">من تاريخ:</label>
+                            <input type="date" name="start_date" id="startDate" value="{{ start_date }}">
+                        </div>
+                        
+                        <div class="filter-group">
+                            <label for="endDate">إلى تاريخ:</label>
+                            <input type="date" name="end_date" id="endDate" value="{{ end_date }}">
+                        </div>
+                        
+                        <div class="filter-group">
+                            <button type="submit" class="btn-filter">تصفية</button>
+                            <button type="button" id="resetFilter" class="btn-reset">إعادة تعيين</button>
+                        </div>
+                    </div>
+                </form>
+            </div>
+            
+            <div class="recent-activity">
+                <h3>النشاط الأخير</h3>
+                <div class="table-container">
+                    <table id="activityTable" class="table">
+                        <thead>
+                            <tr>
+                                <th>#</th>
+                                <th>النشاط</th>
+                                <th>المستخدم</th>
+                                <th>الوقت</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for activity in recent_activities %}
+                            <tr>
+                                <td>{{ forloop.counter }}</td>
+                                <td>
+                                    {{ activity.get_action_display }} - 
+                                    {{ activity.content_type }}: 
+                                    {{ activity.object_repr }}
+                                    {% if activity.details %}
+                                    <br><small>{{ activity.details }}</small>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if activity.user %}
+                                        {{ activity.user.get_full_name|default:activity.user.username }}
+                                    {% else %}
+                                        نظام
+                                    {% endif %}
+                                </td>
+                                <td>{{ activity.timestamp|date:"Y-m-d H:i" }}</td>
+                            </tr>
+                            {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center">لا يوجد نشاطات مسجلة</td>
+                            </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    {% else %}
+        <div class="login-prompt">
+            <h2>مرحباً بك في نظام إدارة المعهد</h2>
+            <p>يجب <a href="{% url 'login' %}">تسجيل الدخول</a> للوصول إلى لوحة التحكم</p>
+        </div>
+    {% endif %}
+    
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // تحديث البيانات كل 60 ثانية
+            function updateDashboard() {
+                fetch('/api/dashboard/')
+                    .then(response => response.json())
+                    .then(data => {
+                        document.getElementById('studentsCount').textContent = data.students_count;
+                        document.getElementById('teachersCount').textContent = data.teachers_count;
+                        document.getElementById('monthlyIncome').textContent = data.monthly_income;
+                        document.getElementById('monthlyExpenses').textContent = data.monthly_expenses;
+                    });
+            }
+            
+            // إعادة تعيين الفلتر
+            document.getElementById('resetFilter').addEventListener('click', function() {
+                document.getElementById('userFilter').value = '';
+                document.getElementById('startDate').value = '';
+                document.getElementById('endDate').value = '';
+                document.getElementById('filterForm').submit();
+            });
+            
+            updateDashboard();
+            setInterval(updateDashboard, 60000);
+        });
+    </script>
+    
+    <style>
+        .filter-section {
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+            margin-bottom: 20px;
+        }
+        
+        .filter-section h3 {
+            margin-top: 0;
+            margin-bottom: 15px;
+            color: #2c3e50;
+        }
+        
+        .filter-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: end;
+        }
+        
+        .filter-group {
+            display: flex;
+            flex-direction: column;
+        }
+        
+        .filter-group label {
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        
+        .filter-group select, 
+        .filter-group input {
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        
+        .btn-filter, .btn-reset {
+            padding: 8px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+        }
+        
+        .btn-filter {
+            background-color: #3498db;
+            color: white;
+        }
+        
+        .btn-reset {
+            background-color: #e74c3c;
+            color: white;
+            margin-left: 10px;
+        }
+        
+        @media (max-width: 768px) {
+            .filter-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+            
+            .filter-group {
+                width: 100%;
+            }
+        }
+    </style>
+{% endblock %}

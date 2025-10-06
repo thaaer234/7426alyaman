@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+{% block content %}
+<div class="module-header">
+    <h2>تفاصيل الحضور - {{ classroom.name }} - {{ date }}</h2>
+    <div class="header-actions">
+        <a href="{% url 'attendance:attendance' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> العودة للسجل
+        </a>
+        <a href="{% url 'attendance:export_attendance' classroom.id date %}" class="btn btn-success">
+            <i class="fas fa-file-excel"></i> تصدير إلى Excel
+        </a>
+    </div>
+</div>
+{% include "partials/_alerts.html" %}
+
+<div class="table-container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>الطالب</th>
+                <th>الحالة</th>
+                <th>ملاحظات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for attendance in attendances %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ attendance.student.full_name }}</td>
+                <td>
+                    <span class="badge {% if attendance.status == 'present' %}bg-success{% elif attendance.status == 'absent' %}bg-danger{% else %}bg-warning{% endif %}">
+                        {{ attendance.get_status_display }}
+                    </span>
+                </td>
+                <td>{{ attendance.notes|default:"-" }}</td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="4" class="text-center">لا توجد سجلات حضور</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+{% endblock %}

@@ -1,0 +1,11 @@
+Django>=4.2,<5.0
+django-crispy-forms>=2.1
+crispy-bootstrap4>=2022.1
+djangorestframework>=3.14
+django-mptt>=0.14
+pandas>=2.0
+openpyxl>=3.1
+xhtml2pdf>=0.2.11
+Pillow>=9.0
+# Optional (development only)
+# django-sslserver>=0.22

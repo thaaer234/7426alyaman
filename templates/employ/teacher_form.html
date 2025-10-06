@@ -1,0 +1,287 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0 text-center">
+                        <i class="fas fa-chalkboard-teacher me-2"></i>
+                        {% if object %}
+                            تعديل بيانات المدرس
+                        {% else %}
+                            إضافة مدرس جديد
+                        {% endif %}
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+
+                        <!-- المعلومات الأساسية -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.full_name.id_for_label }}" class="form-label">
+                                    {{ form.full_name.label }}
+                                    <span class="text-danger">*</span>
+                                </label>
+                                {{ form.full_name }}
+                                {% if form.full_name.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.full_name.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.phone_number.id_for_label }}" class="form-label">
+                                    {{ form.phone_number.label }}
+                                    <span class="text-danger">*</span>
+                                </label>
+                                {{ form.phone_number }}
+                                {% if form.phone_number.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.phone_number.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- الفروع والتاريخ -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label class="form-label">
+                                    {{ form.branches.label }}
+                                    <span class="text-danger">*</span>
+                                </label>
+                                <div class="branches-container p-3 border rounded">
+                                    <div class="form-check">
+                                        <input type="checkbox" name="branches" value="علمي" id="branch_scientific" class="form-check-input">
+                                        <label class="form-check-label" for="branch_scientific">
+                                            العلمي
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="branches" value="أدبي" id="branch_literary" class="form-check-input">
+                                        <label class="form-check-label" for="branch_literary">
+                                            الأدبي
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input type="checkbox" name="branches" value="تاسع" id="branch_ninth" class="form-check-input">
+                                        <label class="form-check-label" for="branch_ninth">
+                                            الصف التاسع
+                                        </label>
+                                    </div>
+                                </div>
+                                {% if form.branches.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.branches.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.hire_date.id_for_label }}" class="form-label">
+                                    {{ form.hire_date.label }}
+                                    <span class="text-danger">*</span>
+                                </label>
+                                {{ form.hire_date }}
+                                {% if form.hire_date.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.hire_date.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- معلومات الراتب -->
+                        <div class="card bg-light mb-3">
+                            <div class="card-body">
+                                <h6 class="card-title">معلومات الراتب</h6>
+                                
+                                <div class="row">
+                                    <div class="col-md-12 mb-3">
+                                        <label for="{{ form.salary_type.id_for_label }}" class="form-label">
+                                            {{ form.salary_type.label }}
+                                            <span class="text-danger">*</span>
+                                        </label>
+                                        {{ form.salary_type }}
+                                        {% if form.salary_type.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.salary_type.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                                
+                                <div class="row">
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.hourly_rate.id_for_label }}" class="form-label">
+                                            {{ form.hourly_rate.label }}
+                                        </label>
+                                        {{ form.hourly_rate }}
+                                        <small class="form-text text-muted">مطلوب للراتب بالساعة أو المختلط</small>
+                                        {% if form.hourly_rate.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.hourly_rate.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                    
+                                    <div class="col-md-6 mb-3">
+                                        <label for="{{ form.monthly_salary.id_for_label }}" class="form-label">
+                                            {{ form.monthly_salary.label }}
+                                        </label>
+                                        {{ form.monthly_salary }}
+                                        <small class="form-text text-muted">مطلوب للراتب الثابت أو المختلط</small>
+                                        {% if form.monthly_salary.errors %}
+                                        <div class="text-danger small mt-1">
+                                            {% for error in form.monthly_salary.errors %}
+                                                {{ error }}
+                                            {% endfor %}
+                                        </div>
+                                        {% endif %}
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- ملاحظات -->
+                        <div class="mb-3">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">
+                                {{ form.notes.label }}
+                            </label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.notes.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- أزرار الحفظ -->
+                        <div class="d-flex justify-content-center gap-3 mt-4">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="fas fa-save me-2"></i>
+                                {% if object %}تحديث البيانات{% else %}حفظ البيانات{% endif %}
+                            </button>
+                            <a href="{% url 'employ:teachers' %}" class="btn btn-secondary px-4">
+                                <i class="fas fa-times me-2"></i>
+                                إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+.branches-container {
+    background: #f8f9fa;
+    border: 1px solid #dee2e6;
+    border-radius: 0.375rem;
+    padding: 1rem;
+}
+
+.form-check {
+    margin-bottom: 0.5rem;
+}
+
+.form-check-input {
+    margin-left: 0.5rem;
+}
+
+.form-check-label {
+    font-weight: 500;
+    color: #495057;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 0.125rem 0.25rem rgba(0, 0, 0, 0.075);
+}
+
+.form-control:focus {
+    border-color: #0d6efd;
+    box-shadow: 0 0 0 0.2rem rgba(13, 110, 253, 0.25);
+}
+
+.text-danger {
+    color: #dc3545 !important;
+}
+
+.btn {
+    border-radius: 0.375rem;
+    font-weight: 500;
+}
+
+.btn:hover {
+    transform: translateY(-1px);
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const salaryTypeSelect = document.getElementById('{{ form.salary_type.id_for_label }}');
+    const hourlyRateField = document.getElementById('{{ form.hourly_rate.id_for_label }}');
+    const monthlySalaryField = document.getElementById('{{ form.monthly_salary.id_for_label }}');
+    
+    function updateSalaryFields() {
+        const salaryType = salaryTypeSelect.value;
+        
+        // Reset all fields
+        hourlyRateField.required = false;
+        monthlySalaryField.required = false;
+        
+        // Set requirements based on salary type
+        if (salaryType === 'hourly') {
+            hourlyRateField.required = true;
+            monthlySalaryField.required = false;
+        } else if (salaryType === 'monthly') {
+            hourlyRateField.required = false;
+            monthlySalaryField.required = true;
+        } else if (salaryType === 'mixed') {
+            hourlyRateField.required = true;
+            monthlySalaryField.required = true;
+        }
+    }
+    
+    // Update fields when salary type changes
+    salaryTypeSelect.addEventListener('change', updateSalaryFields);
+    
+    // Initialize on page load
+    updateSalaryFields();
+});
+</script>
+{% endblock %}

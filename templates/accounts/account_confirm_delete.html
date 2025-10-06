@@ -1,0 +1,27 @@
+{% extends 'accounts/base.html' %}
+
+
+{% load emp_perms %}
+{% block title %}حذف الحساب / Delete Account{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>حذف الحساب / Delete Account</h2>
+</div>
+
+<div class="alert alert-warning">
+    <i class="fas fa-exclamation-triangle"></i>
+    هل أنت متأكد من حذف هذا الحساب؟ لا يمكن التراجع.
+    <br>
+    Are you sure you want to delete this account? This action cannot be undone.
+    <div class="mt-2"><strong>{{ object.code }} - {{ object.name }}</strong></div>
+</div>
+
+<form method="post">
+    {% csrf_token %}
+    <a href="{% url 'accounts:account_detail' object.pk %}" class="btn btn-secondary">إلغاء / Cancel</a>
+    <button type="submit" class="btn btn-danger">حذف / Delete</button>
+</form>
+
+{% endblock %}
+

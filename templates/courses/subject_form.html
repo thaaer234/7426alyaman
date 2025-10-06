@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+{% block content %}
+
+<div class="module-header">
+    <h2>
+        {% if object %}
+            تعديل المادة: {{ object.name }}
+        {% else %}
+            إضافة مادة جديدة
+        {% endif %}
+    </h2>
+</div>
+
+<div class="card">
+    <div class="card-body">
+        <form method="post">
+            {% csrf_token %}
+            
+            <!-- Display form errors -->
+            {% if form.errors %}
+            <div class="alert alert-danger">
+                {% for field, errors in form.errors.items %}
+                    {% for error in errors %}
+                        <p>{{ field|title }}: {{ error }}</p>
+                    {% endfor %}
+                {% endfor %}
+            </div>
+            {% endif %}
+            
+            <!-- Name Field -->
+            <div class="form-group">
+                <label for="id_name">اسم المادة:</label>
+                <input type="text" name="name" id="id_name" 
+                    class="form-control" required
+                    value="{{ form.name.value|default_if_none:'' }}">
+            </div>
+            
+            <!-- Subject Type Field -->
+            <div class="form-group">
+                <label for="id_subject_type">نوع المادة:</label>
+                <select name="subject_type" id="id_subject_type" class="form-control" required>
+                    <option value="">اختر نوع المادة...</option>
+                    {% for value, label in form.subject_type.field.choices %}
+                        <option value="{{ value }}" 
+                            {% if form.subject_type.value == value %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+            
+            <!-- Teachers Field -->
+            <div class="form-group">
+                <label for="id_teachers">المدرسون:</label>
+                <select name="teachers" id="id_teachers" class="form-control" multiple>
+                    {% for teacher in form.teachers.field.queryset %}
+                        <option value="{{ teacher.id }}"
+                            {% if teacher in form.teachers.value %}selected{% endif %}>
+                            {{ teacher.full_name }}
+                        </option>
+                    {% endfor %}
+                </select>
+                <small class="form-text text-muted">
+                    اضغط مع الاستمرار على زر Ctrl (Windows) أو Command (Mac) لتحديد أكثر من مدرس
+                </small>
+            </div>
+            
+            <!-- Submit Button -->
+            <button type="submit" class="btn btn-primary mt-3">
+                <i class="fas fa-save"></i> حفظ
+            </button>
+            
+            <a href="{% url 'courses:subject_list' %}" class="btn btn-secondary mt-3">
+                <i class="fas fa-times"></i> إلغاء
+            </a>
+        </form>
+    </div>
+</div>
+
+{% endblock %}

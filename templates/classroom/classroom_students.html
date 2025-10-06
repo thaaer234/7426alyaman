@@ -1,0 +1,73 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+{% block content %}
+
+<div class="module-header">
+    <h2>
+        طلاب 
+        {% if classroom.class_type == 'study' %}
+        شعبة: {{ classroom.name }} ({{ classroom.get_branches_display }})
+        {% else %}
+        دورة: {{ classroom.name }}
+        {% endif %}
+    </h2>
+    <div>
+        <a href="{% url 'classroom:assign_students' classroom.id %}" class="btn btn-primary">
+            <i class="fas fa-user-plus"></i> إضافة طلاب
+        </a>
+        <a href="{% url 'classroom:export_classroom_students' classroom.id %}" class="btn btn-success">
+            <i class="fas fa-file-excel"></i> تصدير إلى Excel
+        </a>
+        <a href="{% url 'classroom:classroom' %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> العودة للشعب
+        </a>
+    </div>
+</div>
+{% include "partials/_alerts.html" %}
+
+<div class="table-responsive mt-4">
+    <table class="table table-hover">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>الاسم</th>
+                <th>رقم الطالب</th>
+                {% if classroom.class_type == 'study' %}
+                <th>الفرع</th>
+                {% endif %}
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for student in students %}
+            <tr>
+                <td>{{ forloop.counter }}</td>
+                <td>{{ student.full_name }}</td>
+                <td>{{ student.student_number }}</td>
+                {% if classroom.class_type == 'study' %}
+                <td>{{ student.get_branch_display }}</td>
+                {% endif %}
+                <td>
+                    <a href="{% url 'students:student_profile' student.id %}" class="btn btn-sm btn-info">
+                        <i class="fas fa-eye"></i> عرض
+                    </a>
+                    <form action="{% url 'classroom:unassign_student' classroom.id student.id %}" method="post" class="d-inline">
+                        {% csrf_token %}
+                        <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('هل أنت متأكد من إزالة هذا الطالب من الشعبة؟');">
+                            <i class="fas fa-times"></i> إزالة
+                        </button>
+                    </form>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="{% if classroom.class_type == 'study' %}5{% else %}4{% endif %}" class="text-center">لا يوجد طلاب في هذه {% if classroom.class_type == 'study' %}شعبة{% else %}دورة{% endif %}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+{% endblock %}

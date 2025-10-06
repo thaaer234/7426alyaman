@@ -1,0 +1,82 @@
+{% extends 'accounts/base.html' %}
+
+{% load emp_perms %}
+{% load crispy_forms_tags %}
+
+{% block title %}
+    {% if object %}تعديل الحساب / Edit Account{% else %}حساب جديد / New Account{% endif %}
+{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>
+        {% if object %}
+            تعديل الحساب / Edit Account: {{ object.code }}
+        {% else %}
+            حساب جديد / New Account
+        {% endif %}
+    </h2>
+</div>
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">لوحة التحكم / Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'accounts:chart_of_accounts' %}">دليل الحسابات / Chart of Accounts</a></li>
+        <li class="breadcrumb-item active">
+            {% if object %}تعديل / Edit{% else %}جديد / New{% endif %}
+        </li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card">
+            <div class="card-body">
+                <form method="post">
+                    {% csrf_token %}
+                    {% crispy form %}
+                </form>
+            </div>
+        </div>
+    </div>
+    
+    <div class="col-md-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">إرشادات / Guidelines</h5>
+                
+                <div class="mb-3">
+                    <h6>أنواع الحسابات / Account Types:</h6>
+                    <ul class="list-unstyled small">
+                        <li><span class="badge bg-success">الأصول / Assets</span> - ما تملكه الشركة</li>
+                        <li><span class="badge bg-warning">الخصوم / Liabilities</span> - ما على الشركة</li>
+                        <li><span class="badge bg-info">حقوق الملكية / Equity</span> - رأس المال</li>
+                        <li><span class="badge bg-primary">الإيرادات / Revenue</span> - الدخل</li>
+                        <li><span class="badge bg-danger">المصروفات / Expenses</span> - التكاليف</li>
+                    </ul>
+                </div>
+                
+                <div class="mb-3">
+                    <h6>ترقيم الحسابات / Account Numbering:</h6>
+                    <ul class="list-unstyled small">
+                        <li><strong>1000-1999:</strong> الأصول / Assets</li>
+                        <li><strong>2000-2999:</strong> الخصوم / Liabilities</li>
+                        <li><strong>3000-3999:</strong> حقوق الملكية / Equity</li>
+                        <li><strong>4000-4999:</strong> الإيرادات / Revenue</li>
+                        <li><strong>5000-5999:</strong> المصروفات / Expenses</li>
+                    </ul>
+                </div>
+                
+                <div class="alert alert-info">
+                    <small>
+                        <i class="fas fa-info-circle"></i>
+                        يمكنك إدخال الاسم بالعربية والإنجليزية لسهولة الاستخدام
+                        <br>
+                        You can enter names in both Arabic and English for ease of use
+                    </small>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

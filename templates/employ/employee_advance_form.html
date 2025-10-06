@@ -1,0 +1,188 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0 text-center">
+                        <i class="fas fa-hand-holding-usd me-2"></i>
+                        إنشاء سلفة موظف جديدة
+                    </h4>
+                </div>
+                <div class="card-body">
+                    <form method="POST">
+                        {% csrf_token %}
+                        
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            <ul class="mb-0">
+                                {% for error in form.non_field_errors %}
+                                    <li>{{ error }}</li>
+                                {% endfor %}
+                            </ul>
+                        </div>
+                        {% endif %}
+
+                        <!-- اختيار الموظف -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.employee.id_for_label }}" class="form-label">
+                                    {{ form.employee.label }}
+                                    <span class="text-danger">*</span>
+                                </label>
+                                {{ form.employee }}
+                                {% if form.employee.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.employee.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.advance_type.id_for_label }}" class="form-label">
+                                    {{ form.advance_type.label }}
+                                    <span class="text-danger">*</span>
+                                </label>
+                                {{ form.advance_type }}
+                                {% if form.advance_type.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.advance_type.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- المبلغ والغرض -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.amount.id_for_label }}" class="form-label">
+                                    {{ form.amount.label }}
+                                    <span class="text-danger">*</span>
+                                </label>
+                                {{ form.amount }}
+                                {% if form.amount.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.amount.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.payment_method.id_for_label }}" class="form-label">
+                                    {{ form.payment_method.label }}
+                                    <span class="text-danger">*</span>
+                                </label>
+                                {{ form.payment_method }}
+                                {% if form.payment_method.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.payment_method.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- الغرض -->
+                        <div class="mb-3">
+                            <label for="{{ form.purpose.id_for_label }}" class="form-label">
+                                {{ form.purpose.label }}
+                                <span class="text-danger">*</span>
+                            </label>
+                            {{ form.purpose }}
+                            {% if form.purpose.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.purpose.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- تاريخ السداد المتوقع -->
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <label for="{{ form.repayment_date.id_for_label }}" class="form-label">
+                                    {{ form.repayment_date.label }}
+                                </label>
+                                {{ form.repayment_date }}
+                                <small class="form-text text-muted">اختياري - تاريخ السداد المتوقع</small>
+                                {% if form.repayment_date.errors %}
+                                <div class="text-danger small mt-1">
+                                    {% for error in form.repayment_date.errors %}
+                                        {{ error }}
+                                    {% endfor %}
+                                </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- ملاحظات -->
+                        <div class="mb-3">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">
+                                {{ form.notes.label }}
+                            </label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                            <div class="text-danger small mt-1">
+                                {% for error in form.notes.errors %}
+                                    {{ error }}
+                                {% endfor %}
+                            </div>
+                            {% endif %}
+                        </div>
+
+                        <!-- أزرار الحفظ -->
+                        <div class="d-flex justify-content-center gap-3 mt-4">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="fas fa-save me-2"></i>
+                                إنشاء السلفة
+                            </button>
+                            <a href="{% url 'employ:employee_advance_list' %}" class="btn btn-secondary px-4">
+                                <i class="fas fa-times me-2"></i>
+                                إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- معلومات إضافية -->
+<div class="container py-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header">
+                    <h5 class="card-title">معلومات السلف</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info">
+                        <i class="fas fa-info-circle"></i>
+                        <strong>ملاحظات مهمة:</strong>
+                        <ul class="mt-2 mb-0">
+                            <li>سيتم إنشاء قيد محاسبي تلقائياً عند إنشاء السلفة</li>
+                            <li>يمكن تسديد السلفة جزئياً أو كلياً</li>
+                            <li>سيتم تتبع حالة السداد في النظام المحاسبي</li>
+                            <li>جميع المعاملات مرتبطة بالنظام المحاسبي</li>
+                        </ul>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

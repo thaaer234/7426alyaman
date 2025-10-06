@@ -1,0 +1,385 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+{% block content %}
+    <div class="module-header">
+        <h2>إدارة الدورات والبرامج</h2>
+        <div class="header-actions">
+            <a class="btn btn-primary" id="addCourseBtn" href="{% url "courses:subject_create" %}">
+                <i class="fas fa-plus"></i> إضافة مادة جديدة
+            </a>
+            <button class="btn btn-secondary" id="addProgramBtn">
+                <i class="fas fa-layer-group"></i> إضافة برنامج جديد
+            </button>
+        </div>
+    </div>
+    {% include "partials/_alerts.html" %}
+
+    <div class="tabs">
+        <div class="tab active" data-tab="courses">الدورات</div>
+        <div class="tab" data-tab="programs">البرامج</div>
+        <div class="tab" data-tab="categories">الفئات</div>
+    </div>
+    <div class="filters">
+        <div class="form-row">
+            <div class="form-col">
+                <select id="categoryFilter" class="form-control">
+                    <option value="">جميع الفئات</option>
+                    <option value="language">اللغة</option>
+                    <option value="science">العلوم</option>
+                    <option value="computer">الحاسوب</option>
+                </select>
+            </div>
+            <div class="form-col">
+                <select id="statusFilter" class="form-control">
+                    <option value="">جميع الحالات</option>
+                    <option value="active">نشطة</option>
+                    <option value="inactive">غير نشطة</option>
+                    <option value="upcoming">قادمة</option>
+                </select>
+            </div>
+            <div class="form-col">
+                <input type="text" id="searchInput" class="form-control" placeholder="بحث باسم الدورة...">
+            </div>
+        </div>
+    </div>
+    <div class="tab-content active" id="courses-tab">
+        <div class="table-container">
+            <table id="coursesTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>اسم الدورة</th>
+                        <th>الفئة</th>
+                        <th>المدة</th>
+                        <th>الرسوم</th>
+                        <th>عدد الطلاب</th>
+                        <th>الحالة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>اللغة الإنجليزية - المستوى الأول</td>
+                        <td>اللغة</td>
+                        <td>3 أشهر</td>
+                        <td>50,000 ل.س</td>
+                        <td>15</td>
+                        <td><span class="badge active">نشطة</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-info"><i class="fas fa-eye"></i></button>
+                            <button class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>الرياضيات - المستوى الثاني</td>
+                        <td>العلوم</td>
+                        <td>2.5 أشهر</td>
+                        <td>60,000 ل.س</td>
+                        <td>12</td>
+                        <td><span class="badge upcoming">قادمة</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-info"><i class="fas fa-eye"></i></button>
+                            <button class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="tab-content" id="programs-tab">
+        <div class="table-container">
+            <table id="programsTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>اسم البرنامج</th>
+                        <th>عدد الدورات</th>
+                        <th>المدة الإجمالية</th>
+                        <th>الرسوم الإجمالية</th>
+                        <th>عدد الطلاب</th>
+                        <th>الحالة</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>برنامج اللغة الإنجليزية المتكامل</td>
+                        <td>4</td>
+                        <td>12 شهر</td>
+                        <td>200,000 ل.س</td>
+                        <td>25</td>
+                        <td><span class="badge active">نشط</span></td>
+                        <td>
+                            <button class="btn btn-sm btn-info"><i class="fas fa-eye"></i></button>
+                            <button class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <div class="tab-content" id="categories-tab">
+        <div class="table-container">
+            <table id="categoriesTable">
+                <thead>
+                    <tr>
+                        <th>#</th>
+                        <th>اسم الفئة</th>
+                        <th>عدد الدورات</th>
+                        <th>عدد البرامج</th>
+                        <th>الإجراءات</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>1</td>
+                        <td>اللغة</td>
+                        <td>5</td>
+                        <td>2</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                    <tr>
+                        <td>2</td>
+                        <td>العلوم</td>
+                        <td>3</td>
+                        <td>1</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary"><i class="fas fa-edit"></i></button>
+                            <button class="btn btn-sm btn-danger"><i class="fas fa-trash"></i></button>
+                        </td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+    </div>
+    <!-- نموذج إضافة/تعديل دورة -->
+    {% comment %} <div id="courseModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3 id="courseModalTitle">إضافة دورة جديدة</h3>
+            <form id="courseForm">
+                <div class="form-row">
+                    <div class="form-col">
+                        <label for="courseName">اسم الدورة</label>
+                        <input type="text" id="courseName" required>
+                    </div>
+                    <div class="form-col">
+                        <label for="courseCategory">الفئة</label>
+                        <select id="courseCategory" required>
+                            <option value="">اختر الفئة</option>
+                            <option value="1">اللغة</option>
+                            <option value="2">العلوم</option>
+                            <option value="3">الحاسوب</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-col">
+                        <label for="courseCode">كود الدورة</label>
+                        <input type="text" id="courseCode" required>
+                    </div>
+                    <div class="form-col">
+                        <label for="courseLevel">المستوى</label>
+                        <select id="courseLevel">
+                            <option value="">اختر المستوى</option>
+                            <option value="1">المبتدئ</option>
+                            <option value="2">المتوسط</option>
+                            <option value="3">المتقدم</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-col">
+                        <label for="courseDuration">المدة (بالأسابيع)</label>
+                        <input type="number" id="courseDuration" required>
+                    </div>
+                    <div class="form-col">
+                        <label for="courseFees">الرسوم</label>
+                        <input type="number" id="courseFees" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-col">
+                        <label for="courseStartDate">تاريخ البدء</label>
+                        <input type="date" id="courseStartDate">
+                    </div>
+                    <div class="form-col">
+                        <label for="courseEndDate">تاريخ الانتهاء</label>
+                        <input type="date" id="courseEndDate">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-col">
+                        <label for="courseDescription">وصف الدورة</label>
+                        <textarea id="courseDescription" rows="3"></textarea>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-col">
+                        <label for="courseRequirements">المتطلبات</label>
+                        <textarea id="courseRequirements" rows="2"></textarea>
+                    </div>
+                    <div class="form-col">
+                        <label for="courseOutcomes">المخرجات المتوقعة</label>
+                        <textarea id="courseOutcomes" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary cancel-btn">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ</button>
+                </div>
+            </form>
+        </div>
+    </div> {% endcomment %}
+    <!-- نموذج إضافة/تعديل برنامج -->
+    <div id="programModal" class="modal">
+        <div class="modal-content">
+            <span class="close">&times;</span>
+            <h3 id="programModalTitle">إضافة برنامج جديد</h3>
+            <form id="programForm">
+                <div class="form-row">
+                    <div class="form-col">
+                        <label for="programName">اسم البرنامج</label>
+                        <input type="text" id="programName" required>
+                    </div>
+                    <div class="form-col">
+                        <label for="programCategory">الفئة</label>
+                        <select id="programCategory" required>
+                            <option value="">اختر الفئة</option>
+                            <option value="1">اللغة</option>
+                            <option value="2">العلوم</option>
+                            <option value="3">الحاسوب</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-col">
+                        <label for="programCode">كود البرنامج</label>
+                        <input type="text" id="programCode" required>
+                    </div>
+                    <div class="form-col">
+                        <label for="programDuration">المدة (بالأشهر)</label>
+                        <input type="number" id="programDuration" required>
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-col">
+                        <label for="programFees">الرسوم الإجمالية</label>
+                        <input type="number" id="programFees" required>
+                    </div>
+                    <div class="form-col">
+                        <label for="programDiscount">الخصم (إن وجد)</label>
+                        <input type="number" id="programDiscount" value="0">
+                    </div>
+                </div>
+                <div class="form-row">
+                    <div class="form-col">
+                        <label>الدورات المضمنة</label>
+                        <div class="courses-list">
+                            <div class="course-item">
+                                <input type="checkbox" id="course1" value="1">
+                                <label for="course1">اللغة الإنجليزية - المستوى الأول</label>
+                            </div>
+                            <div class="course-item">
+                                <input type="checkbox" id="course2" value="2">
+                                <label for="course2">اللغة الإنجليزية - المستوى الثاني</label>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="form-col">
+                        <label for="programDescription">وصف البرنامج</label>
+                        <textarea id="programDescription" rows="5"></textarea>
+                    </div>
+                </div>
+                <div class="form-actions">
+                    <button type="button" class="btn btn-secondary cancel-btn">إلغاء</button>
+                    <button type="submit" class="btn btn-primary">حفظ</button>
+                </div>
+            </form>
+        </div>
+    </div>
+    <script>
+        document.addEventListener('DOMContentLoaded', function () {
+            // Tab switching functionality
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach(tab => {
+                tab.addEventListener('click', function () {
+                    // Remove active class from all tabs
+                    tabs.forEach(t => t.classList.remove('active'));
+                    // Add active class to clicked tab
+                    this.classList.add('active');
+
+                    // Hide all tab contents
+                    document.querySelectorAll('.tab-content').forEach(content => {
+                        content.classList.remove('active');
+                    });
+
+                    // Show the corresponding tab content
+                    const tabId = this.getAttribute('data-tab');
+                    document.getElementById(`${tabId}-tab`).classList.add('active');
+                });
+            });
+
+            // Modal handling
+            const courseModal = document.getElementById('courseModal');
+            const programModal = document.getElementById('programModal');
+
+            // Add Course Button
+            document.getElementById('addCourseBtn').addEventListener('click', function () {
+                document.getElementById('courseModalTitle').textContent = 'إضافة دورة جديدة';
+                courseModal.style.display = 'block';
+            });
+
+            // Add Program Button
+            document.getElementById('addProgramBtn').addEventListener('click', function () {
+                document.getElementById('programModalTitle').textContent = 'إضافة برنامج جديد';
+                programModal.style.display = 'block';
+            });
+
+            // Close buttons for modals
+            const closeButtons = document.querySelectorAll('.close, .cancel-btn');
+            closeButtons.forEach(button => {
+                button.addEventListener('click', function () {
+                    courseModal.style.display = 'none';
+                    programModal.style.display = 'none';
+                });
+            });
+
+            // Close modal when clicking outside of it
+            window.addEventListener('click', function (event) {
+                if (event.target === courseModal) {
+                    courseModal.style.display = 'none';
+                }
+                if (event.target === programModal) {
+                    programModal.style.display = 'none';
+                }
+            });
+
+            // Form submissions (placeholder functionality)
+            document.getElementById('courseForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                alert('تم حفظ بيانات الدورة بنجاح');
+                courseModal.style.display = 'none';
+                // Here you would typically send data to server
+            });
+
+            document.getElementById('programForm').addEventListener('submit', function (e) {
+                e.preventDefault();
+                alert('تم حفظ بيانات البرنامج بنجاح');
+                programModal.style.display = 'none';
+                // Here you would typically send data to server
+            });
+        });
+    </script>
+{% endblock %}

@@ -1,0 +1,186 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+{% block content %}
+<div class="module-header">
+    <h2>إدارة الشعب</h2>
+    <div class="header-actions">
+        <a href="{% url 'classroom:create_classroom' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> انشاء شعبة جديدة
+        </a>
+    </div>
+</div>
+{% include "partials/_alerts.html" %}
+
+<div class="filters">
+    <div class="form-row">
+        <div class="form-col">
+            <select id="classTypeFilter" class="form-control">
+                <option value="">جميع الأنواع</option>
+                <option value="study">شعبة دراسية</option>
+                <option value="course">دورة</option>
+            </select>
+        </div>
+        <div class="form-col">
+            <select id="branchTypeFilter" class="form-control">
+                <option value="">جميع الفروع</option>
+                <option value="علمي">علمي</option>
+                <option value="أدبي">أدبي</option>
+                <option value="تاسع">تاسع</option>
+            </select>
+        </div>
+        <div class="form-col">
+            <input type="text" id="branchSearch" class="form-control" placeholder="بحث باسم الشعبة...">
+        </div>
+        <div class="form-col">
+            <button class="btn btn-info" id="filterBranchesBtn">
+                <i class="fas fa-filter"></i> تصفية
+            </button>
+            <button class="btn btn-secondary" id="resetFilterBtn">
+                <i class="fas fa-undo"></i> إعادة تعيين
+            </button>
+        </div>
+    </div>
+</div>
+
+<div class="table-container">
+    <table id="branchesTable">
+        <thead>
+            <tr>
+                <th>#</th>
+                <th>اسم الشعبة</th>
+                <th>نوع الشعبة</th>
+                <th>الفرع</th>
+                <th>عدد الطلاب</th>
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for classroom in classrooms %}
+            <tr>
+                <td>{{ classroom.id }}</td>
+                <td>{{ classroom.name }}</td>
+                <td>
+                    <span class="badge {% if classroom.class_type == 'study' %}study-badge{% else %}course-badge{% endif %}" 
+                          data-type="{{ classroom.class_type }}">
+                        {{ classroom.get_class_type_display }}
+                    </span>
+                </td>
+                <td>
+                    {% if classroom.class_type == 'study' %}
+                    <span class="badge 
+                        {% if classroom.branches == 'علمي' %}scientific-badge
+                        {% elif classroom.branches == 'أدبي' %}literary-badge
+                        {% else %}ninth-badge{% endif %}"
+                        data-branch="{{ classroom.branches }}">
+                        {{ classroom.get_branches_display }}
+                    </span>
+                    {% else %}
+                    -
+                    {% endif %}
+                </td>
+                <td>{{ classroom.enrollments.count }}</td>
+                <td>
+                    <div class="action-buttons">
+                        <a href="{% url 'classroom:classroom_students' classroom.id %}" class="btn btn-sm btn-info">
+                            <i class="fas fa-users"></i> عرض الطلاب
+                        </a>
+                        <a href="{% url 'classroom:assign_students' classroom.id %}" class="btn btn-sm btn-primary">
+                            <i class="fas fa-user-plus"></i> إضافة طلاب
+                        </a>
+                        <a href="{% url 'classroom:classroom_subject_list' classroom.id %}" class="btn btn-sm btn-warning">
+                            <i class="fas fa-cog"></i> إدارة مواد الشعبة
+                        </a>
+                        <form action="{% url 'classroom:delete_classroom' classroom.id %}" method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-danger" onclick="return confirm('هل أنت متأكد من حذف هذه الشعبة؟ سيتم إزالة جميع الطلاب منها.');">
+                                <i class="fas fa-trash"></i> حذف
+                            </button>
+                        </form>
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="6" class="text-center">لا توجد شعب متاحة</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<style>
+    .study-badge {
+        background-color: #3498db;
+        color: white;
+    }
+    .course-badge {
+        background-color: #2ecc71;
+        color: white;
+    }
+    .scientific-badge {
+        background-color: #e74c3c;
+        color: white;
+    }
+    .literary-badge {
+        background-color: #9b59b6;
+        color: white;
+    }
+    .ninth-badge {
+        background-color: #f39c12;
+        color: white;
+    }
+    .badge {
+        padding: 5px 10px;
+        border-radius: 4px;
+        font-size: 14px;
+    }
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const classTypeFilter = document.getElementById('classTypeFilter');
+    const branchTypeFilter = document.getElementById('branchTypeFilter');
+    const branchSearch = document.getElementById('branchSearch');
+    const filterBtn = document.getElementById('filterBranchesBtn');
+    const resetBtn = document.getElementById('resetFilterBtn');
+    const tableRows = document.querySelectorAll('#branchesTable tbody tr');
+
+    function filterBranches() {
+        const selectedClassType = classTypeFilter.value;
+        const selectedBranchType = branchTypeFilter.value;
+        const searchText = branchSearch.value.toLowerCase();
+
+        tableRows.forEach(row => {
+            const className = row.querySelector('td:nth-child(2)').textContent.toLowerCase();
+            const classTypeValue = row.querySelector('td:nth-child(3) span').dataset.type;
+            const branchTypeElement = row.querySelector('td:nth-child(4) span');
+            const branchTypeValue = branchTypeElement ? branchTypeElement.dataset.branch : '';
+            
+            const classTypeMatch = selectedClassType === '' || classTypeValue === selectedClassType;
+            const branchTypeMatch = selectedBranchType === '' || branchTypeValue === selectedBranchType;
+            const searchMatch = className.includes(searchText);
+            
+            row.style.display = classTypeMatch && branchTypeMatch && searchMatch ? '' : 'none';
+        });
+    }
+
+    filterBtn.addEventListener('click', filterBranches);
+    resetBtn.addEventListener('click', function() {
+        classTypeFilter.value = '';
+        branchTypeFilter.value = '';
+        branchSearch.value = '';
+        tableRows.forEach(row => row.style.display = '');
+    });
+
+    branchSearch.addEventListener('keyup', function(e) {
+        if (e.key === 'Enter') filterBranches();
+    });
+
+    // تطبيق التصفية تلقائياً عند تغيير نوع الشعبة أو الفرع
+    classTypeFilter.addEventListener('change', filterBranches);
+    branchTypeFilter.addEventListener('change', filterBranches);
+});
+</script>
+{% endblock %}

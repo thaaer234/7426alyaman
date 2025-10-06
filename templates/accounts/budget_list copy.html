@@ -1,0 +1,130 @@
+{% extends 'accounts/base.html' %}
+
+
+{% load emp_perms %}
+{% block title %}الميزانيات / Budgets{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>الميزانيات / Budgets</h2>
+    <div>
+        <a href="{% url 'accounts:budget_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> ميزانية جديدة / New Budget
+        </a>
+    </div>
+</div>
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">لوحة التحكم / Dashboard</a></li>
+        <li class="breadcrumb-item active">الميزانيات / Budgets</li>
+    </ol>
+</nav>
+
+<div class="row mb-4">
+    <div class="col-md-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">ملخص الميزانية / Budget Summary</h5>
+                <div class="row text-center">
+                    <div class="col-md-3">
+                        <div class="border rounded p-3">
+                            <h6 class="text-muted">إجمالي المخطط / Total Budgeted</h6>
+                            <div class="fs-4 fw-bold text-primary">{{ total_budgeted|floatformat:2 }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border rounded p-3">
+                            <h6 class="text-muted">إجمالي الفعلي / Total Actual</h6>
+                            <div class="fs-4 fw-bold text-success">{{ total_actual|floatformat:2 }}</div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border rounded p-3">
+                            <h6 class="text-muted">الانحراف / Variance</h6>
+                            <div class="fs-4 fw-bold {% if total_variance >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                {{ total_variance|floatformat:2 }}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="col-md-3">
+                        <div class="border rounded p-3">
+                            <h6 class="text-muted">نسبة الانحراف / Variance %</h6>
+                            <div class="fs-4 fw-bold text-info">
+                                {% if total_budgeted > 0 %}
+                                    {% widthratio total_variance total_budgeted 100 %}%
+                                {% else %}
+                                    0.0%
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="table-container">
+    {% if budgets %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>الحساب / Account</th>
+                        <th>الفترة / Period</th>
+                        <th class="text-end">المخطط / Budgeted</th>
+                        <th class="text-end">الفعلي / Actual</th>
+                        <th class="text-end">الانحراف / Variance</th>
+                        <th class="text-center">النسبة / %</th>
+                        <th>الإجراءات / Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for budget in budgets %}
+                    <tr>
+                        <td>
+                            <a href="{{ budget.account.get_absolute_url }}" class="text-decoration-none">
+                                <strong>{{ budget.account.code }}</strong>
+                                <br>
+                                <small>{{ budget.account.display_name }}</small>
+                            </a>
+                        </td>
+                        <td>{{ budget.period.name }}</td>
+                        <td class="text-end">{{ budget.budgeted_amount|floatformat:2 }}</td>
+                        <td class="text-end">{{ budget.actual_amount|floatformat:2 }}</td>
+                        <td class="text-end {% if budget.variance >= 0 %}text-success{% else %}text-danger{% endif %}">
+                            {{ budget.variance|floatformat:2 }}
+                        </td>
+                        <td class="text-center">
+                            <span class="badge {% if budget.variance_percentage >= 0 %}bg-success{% else %}bg-danger{% endif %}">
+                                {{ budget.variance_percentage|floatformat:1 }}%
+                            </span>
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{% url 'accounts:budget_detail' budget.pk %}" class="btn btn-outline-info" title="عرض / View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                <a href="{% url 'accounts:budget_update' budget.pk %}" class="btn btn-outline-primary" title="تعديل / Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center text-muted py-5">
+            <i class="fas fa-calculator fa-3x mb-3"></i>
+            <h4>لا توجد ميزانيات / No Budgets Found</h4>
+            <p>ابدأ بإنشاء ميزانية جديدة / Start by creating a new budget</p>
+            <a href="{% url 'accounts:budget_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> إنشاء ميزانية جديدة / Create New Budget
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

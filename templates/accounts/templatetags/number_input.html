@@ -1,0 +1,26 @@
+{% load static %}
+
+<div class="form-group">
+    <label for="{{ field_name }}" class="form-label">{{ field_name|title }}</label>
+    <input 
+        type="text" 
+        id="{{ field_name }}" 
+        name="{{ field_name }}" 
+        value="{{ value }}"
+        placeholder="{{ placeholder }}"
+        class="{{ css_class }} number-input"
+        data-number-format="true"
+        data-thousand-separator="{{ options.thousandSeparator }}"
+        data-decimal-separator="{{ options.decimalSeparator }}"
+        data-decimal-places="{{ options.decimalPlaces }}"
+        data-allow-negative="{{ options.allowNegative|yesno:'true,false' }}"
+        {% if options.prefix %}data-prefix="{{ options.prefix }}"{% endif %}
+        {% if options.suffix %}data-suffix="{{ options.suffix }}"{% endif %}
+    >
+    {% if options.prefix %}
+    <div class="input-prefix">{{ options.prefix }}</div>
+    {% endif %}
+    {% if options.suffix %}
+    <div class="input-suffix">{{ options.suffix }}</div>
+    {% endif %}
+</div>

@@ -1,0 +1,182 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+{% block content %}
+<div class="module-header">
+    <h2>{% if object %}تعديل{% else %}تسجيل{% endif %} إجازة</h2>
+</div>
+
+{% include "partials/_alerts.html" %}
+
+<div class="form-container">
+    <form method="post" class="vacation-form">
+        {% csrf_token %}
+        
+        <!-- قسم اختيار الموظف (للجميع) -->
+        <div class="employee-selection-section">
+            <h3>اختيار الموظف</h3>
+            <div class="form-row">
+                <div class="form-col full-width">
+                    <label for="{{ form.employee.id_for_label }}">اختيار الموظف:</label>
+                    {{ form.employee }}
+                </div>
+            </div>
+        </div>
+
+        <!-- نوع الإجازة -->
+        <div class="form-row">
+            <div class="form-col full-width">
+                <h3>نوع الإجازة</h3>
+                <div class="vacation-type-options">
+                    {{ form.vacation_type }}
+                </div>
+            </div>
+        </div>
+        
+        <!-- سبب الإجازة -->
+        <div class="form-row">
+            <div class="form-col full-width">
+                <label for="{{ form.reason.id_for_label }}">سبب الإجازة (مفصلة):</label>
+                {{ form.reason }}
+            </div>
+        </div>
+        
+        <!-- تواريخ الإجازة -->
+        <div class="form-row">
+            <div class="form-col">
+                <label for="{{ form.start_date.id_for_label }}">تاريخ بدء الإجازة:</label>
+                {{ form.start_date }}
+            </div>
+            <div class="form-col">
+                <label for="{{ form.end_date.id_for_label }}">تاريخ انتهاء الإجازة:</label>
+                {{ form.end_date }}
+            </div>
+        </div>
+        
+        <!-- تاريخ التقديم -->
+        <div class="form-row">
+            <div class="form-col">
+                <label>تاريخ تقديم الطلب:</label>
+                <input type="text" value="{% now 'Y-m-d' %}" class="form-control" disabled>
+            </div>
+            <div class="form-col">
+                <label for="{{ form.is_replacement_secured.id_for_label }}">تم تأمين البديل:</label>
+                <div class="checkbox-option">
+                    {{ form.is_replacement_secured }}
+                    <label for="{{ form.is_replacement_secured.id_for_label }}">نعم</label>
+                </div>
+            </div>
+        </div>
+        
+        <div class="management-section">
+            <h3>قسم الإدارة</h3>
+            <div class="form-row">
+                <div class="form-col">
+                    <label for="{{ form.manager_opinion.id_for_label }}">رأي المدير:</label>
+                    {{ form.manager_opinion }}
+                </div>
+                <div class="form-col">
+                    <label for="{{ form.status.id_for_label }}">الموافقة على الإجازة:</label>
+                    {{ form.status }}
+                </div>
+            </div>
+            
+            <div class="form-row">
+                <div class="form-col full-width">
+                    <label for="{{ form.general_manager_opinion.id_for_label }}">رأي المدير العام:</label>
+                    {{ form.general_manager_opinion }}
+                </div>
+            </div>
+        </div>
+        <div class="form-buttons">
+            <button type="submit" class="btn btn-primary">حفظ</button>
+            <a href="{% url 'employ:vacation_list' %}" class="btn btn-secondary">إلغاء</a>
+        </div>
+    </form>
+</div>
+
+<style>
+.vacation-form {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 20px;
+    background: #f9f9f9;
+    border-radius: 8px;
+}
+
+.form-row {
+    display: flex;
+    gap: 20px;
+    margin-bottom: 20px;
+}
+
+.form-col {
+    flex: 1;
+}
+
+.form-col.full-width {
+    flex: 100%;
+}
+
+.employee-selection-section, .management-section {
+    background: #e8f4f8;
+    padding: 15px;
+    border-radius: 5px;
+    margin-bottom: 20px;
+}
+
+.employee-selection-section h3, .management-section h3 {
+    margin-top: 0;
+    color: #2c5282;
+    border-bottom: 2px solid #2c5282;
+    padding-bottom: 5px;
+}
+
+.vacation-type-options {
+    display: flex;
+    gap: 20px;
+}
+
+.vacation-type-options select {
+    flex: 1;
+}
+
+.checkbox-option {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-top: 8px;
+}
+
+.checkbox-option input[type="checkbox"] {
+    width: auto;
+    margin: 0;
+}
+
+.form-buttons {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 30px;
+}
+
+label {
+    display: block;
+    margin-bottom: 5px;
+    font-weight: bold;
+}
+
+input, select, textarea {
+    width: 100%;
+    padding: 8px;
+    border: 1px solid #ddd;
+    border-radius: 4px;
+}
+
+input:disabled {
+    background-color: #f5f5f5;
+    color: #666;
+}
+</style>
+{% endblock %}

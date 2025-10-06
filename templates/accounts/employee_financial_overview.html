@@ -1,0 +1,127 @@
+{% extends 'accounts/base.html' %}
+
+{% load emp_perms %}
+{% load humanize %}
+
+{% block title %}نظرة مالية على الرواتب{% endblock %}
+
+{% block content %}
+<div class="module-header d-flex justify-content-between align-items-center mb-4">
+    <h2>نظرة مالية على الرواتب</h2>
+    <a href="{% url 'employ:hr' %}" class="btn btn-outline-secondary">
+        <i class="fas fa-arrow-left"></i> العودة إلى إدارة الموارد البشرية
+    </a>
+</div>
+
+<div class="row g-3">
+    <div class="col-lg-8">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header">
+                <h5 class="mb-0">الموظفون</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table mb-0">
+                        <thead>
+                            <tr>
+                                <th>الموظف</th>
+                                <th>المنصب</th>
+                                <th>الراتب الشهري</th>
+                                <th>مدفوع حتى الآن</th>
+                                <th>سلف مستحقة</th>
+                                <th>آخر دفعة</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in employee_rows %}
+                                <tr>
+                                    <td>{{ row.display_name }}</td>
+                                    <td>{{ row.position }}</td>
+                                    <td>{{ row.monthly_salary|floatformat:2 }}</td>
+                                    <td>{{ row.total_paid|floatformat:2 }}</td>
+                                    <td>{{ row.outstanding_advances|floatformat:2 }}</td>
+                                    <td>
+                                        {% if row.last_payment %}
+                                            {{ row.last_payment.date|date:"Y-m-d" }}<br>
+                                            <small class="text-muted">{{ row.last_payment.amount|floatformat:2 }}</small>
+                                        {% else %}
+                                            <span class="text-muted">لا يوجد</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{{ row.detail_url }}" class="btn btn-sm btn-outline-primary">
+                                            تفاصيل
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="7" class="text-center text-muted">لا توجد بيانات للموظفين.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="col-lg-4">
+        <div class="card shadow-sm mb-3">
+            <div class="card-header">
+                <h5 class="mb-0">المعلمون</h5>
+            </div>
+            <div class="card-body p-0">
+                <div class="table-responsive">
+                    <table class="table table-sm mb-0">
+                        <thead>
+                            <tr>
+                                <th>المعلم</th>
+                                <th>راتب شهري</th>
+                                <th>آخر دفعة</th>
+                                <th></th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            {% for row in teacher_rows %}
+                                <tr>
+                                    <td>{{ row.display_name }}</td>
+                                    <td>{{ row.monthly_salary|floatformat:2 }}</td>
+                                    <td>
+                                        {% if row.last_payment %}
+                                            {{ row.last_payment.date|date:"Y-m-d" }}<br>
+                                            <small class="text-muted">{{ row.last_payment.amount|floatformat:2 }}</small>
+                                        {% else %}
+                                            <span class="text-muted">لا يوجد</span>
+                                        {% endif %}
+                                    </td>
+                                    <td class="text-end">
+                                        <a href="{{ row.detail_url }}" class="btn btn-sm btn-outline-primary">
+                                            تفاصيل
+                                        </a>
+                                    </td>
+                                </tr>
+                            {% empty %}
+                                <tr>
+                                    <td colspan="4" class="text-center text-muted">لا توجد بيانات للمعلمين.</td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+        <div class="card shadow-sm">
+            <div class="card-header">
+                <h5 class="mb-0">حساب الرواتب الرئيسي</h5>
+            </div>
+            <div class="card-body">
+                <p class="mb-1">يتم تصنيف الرواتب تحت الحساب الأب رقم <strong>{{ salary_parent_code }}</strong>.</p>
+                <p class="text-muted mb-0">يتم إنشاء حسابات فرعية تلقائياً لكل موظف أو معلم عند تسجيل قيد الراتب.</p>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

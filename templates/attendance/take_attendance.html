@@ -1,0 +1,166 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+{% block content %}
+{% now "Y-m-d" as today %}
+    <div class="module-header">
+        <h2>تسجيل الحضور</h2>
+    </div>
+{% include "partials/_alerts.html" %}
+
+<form method="post" id="attendanceForm">
+    {% csrf_token %}
+    <div class="form-row">  
+        <div class="form-col">
+            <label for="classroom">الشعبة</label>
+            <select name="classroom" id="classroom" class="form-control" required>
+                <option value="">اختر الشعبة</option>
+                {% for classroom in classrooms %}
+                <option value="{{ classroom.id }}">{{ classroom.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="form-col">
+            <label for="date">التاريخ</label>
+            <input type="date" name="date" id="date" class="form-control" required value="{{ today }}">
+        </div>
+    </div>
+    
+    <div class="table-container mt-4">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>الطالب</th>
+                    <th>حالة الحضور</th>
+                    <th>ملاحظات</th>
+                </tr>
+            </thead>
+            <tbody id="studentsList">
+                <!-- سيتم ملؤها بواسطة JavaScript -->
+            </tbody>
+        </table>
+    </div>
+    <button type="submit" class="btn btn-primary mt-3">حفظ الحضور</button>
+    <a href="{% url 'attendance:attendance' %}" class="btn btn-secondary mt-3 ml-2">العودة للسجل</a>
+</form>
+
+<style>
+.attendance-container {
+    display: flex;
+    gap: 20px;
+}
+.attendance-option {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: all 0.2s;
+}
+.attendance-option input[type="radio"] {
+    transform: scale(1.3);
+    cursor: pointer;
+}
+.present-option {
+    background-color: rgba(40, 167, 69, 0.1);
+    border: 1px solid #28a745;
+    color: #28a745;
+}
+.absent-option {
+    background-color: rgba(220, 53, 69, 0.1);
+    border: 1px solid #dc3545;
+    color: #dc3545;
+}
+.attendance-option input[type="radio"]:checked + * {
+    font-weight: bold;
+}
+</style>
+
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const classroomSelect = document.getElementById('classroom');
+    const studentsList = document.getElementById('studentsList');
+    
+    classroomSelect.addEventListener('change', async function() {
+        const classroomId = this.value;
+        if (!classroomId) {
+            studentsList.innerHTML = '';
+            return;
+        }
+        
+        try {
+            // إظهار رسالة تحميل
+            studentsList.innerHTML = `
+                <tr>
+                    <td colspan="3" class="text-center">
+                        <div class="spinner-border text-primary" role="status">
+                            <span class="sr-only">جاري التحميل...</span>
+                        </div>
+                    </td>
+                </tr>
+            `;
+            
+            const response = await fetch(`{% url 'attendance:get_students' %}?classroom=${classroomId}`);
+            
+            if (!response.ok) {
+                throw new Error(`خطأ في الشبكة: ${response.status}`);
+            }
+            
+            const data = await response.json();
+            
+            console.log('البيانات المستلمة:', data);
+            studentsList.innerHTML = '';
+            
+            if (data.error) {
+                throw new Error(data.error);
+            }
+            
+            if (data.length === 0) {
+                studentsList.innerHTML = `
+                    <tr>
+                        <td colspan="3" class="text-center">
+                            لا يوجد طلاب في هذه الشعبة
+                        </td>
+                    </tr>
+                `;
+                return;
+            }
+            
+            data.forEach(student => {
+                const row = document.createElement('tr');
+                row.innerHTML = `
+                    <td>${student.full_name}</td>
+                    <td>
+                        <div class="attendance-container">
+                            <label class="attendance-option present-option">
+                                <input type="radio" name="status_${student.id}" value="present" checked>
+                                حاضر
+                            </label>
+                            <label class="attendance-option absent-option">
+                                <input type="radio" name="status_${student.id}" value="absent">
+                                غائب
+                            </label>
+                        </div>
+                    </td>
+                    <td>
+                        <input type="text" name="notes_${student.id}" class="form-control" placeholder="ملاحظات">
+                    </td>
+                `;
+                studentsList.appendChild(row);
+            });
+        } catch (error) {
+            console.error('Error:', error);
+            studentsList.innerHTML = `
+                <tr>
+                    <td colspan="3" class="text-center text-danger">
+                        حدث خطأ: ${error.message}
+                    </td>
+                </tr>
+            `;
+        }
+    });
+});
+</script>
+{% endblock %}

@@ -1,0 +1,72 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+
+{% block content %}
+<div class="container mt-4">
+    <div class="card">
+        <div class="card-header bg-primary text-white">
+            <h4>إضافة مادة لشعبة {{ classroom.name }}</h4>
+        </div>
+        <div class="card-body">
+            <form method="post">
+                {% csrf_token %}
+                
+                {% if form.non_field_errors %}
+                <div class="alert alert-danger">
+                    {% for error in form.non_field_errors %}
+                        {{ error }}
+                    {% endfor %}
+                </div>
+                {% endif %}
+                
+                <!-- حقل المادة مع التعديل -->
+                <div class="form-group">
+                    <label for="subject_select">
+                        المادة <span class="text-danger">*</span>
+                    </label>
+                    <select name="subject" class="form-control" id="subject_select" required>
+                        <option value="">اختر المادة</option>
+                        {% for subject_id, subject_name in subject_choices %}
+                            <option value="{{ subject_id }}" {% if form.subject.value == subject_id %}selected{% endif %}>
+                                {{ subject_name }}
+                            </option>
+                        {% endfor %}
+                    </select>
+                    {% if form.subject.errors %}
+                    <div class="invalid-feedback d-block">
+                        {{ form.subject.errors }}
+                    </div>
+                    {% endif %}
+                </div>
+                
+                <!-- باقي الحقول -->
+                {% for field in form %}
+                    {% if field.name != 'subject' %}
+                    <div class="form-group">
+                        <label for="{{ field.id_for_label }}">
+                            {{ field.label }}
+                            {% if field.field.required %}<span class="text-danger">*</span>{% endif %}
+                        </label>
+                        {{ field }}
+                        {% if field.errors %}
+                        <div class="invalid-feedback d-block">
+                            {{ field.errors }}
+                        </div>
+                        {% endif %}
+                    </div>
+                    {% endif %}
+                {% endfor %}
+                
+                <button type="submit" class="btn btn-success">
+                    <i class="fas fa-save"></i> حفظ
+                </button>
+                <a href="{% url 'classroom:classroom_subject_list' classroom.id %}" class="btn btn-secondary">
+                    <i class="fas fa-times"></i> إلغاء
+                </a>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

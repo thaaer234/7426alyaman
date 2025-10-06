@@ -1,0 +1,92 @@
+{% extends 'accounts/base.html' %}
+
+
+{% load emp_perms %}
+{% block title %}الفترات المحاسبية / Accounting Periods{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>الفترات المحاسبية / Accounting Periods</h2>
+    <div>
+        <a href="{% url 'accounts:period_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> فترة جديدة / New Period
+        </a>
+    </div>
+</div>
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">لوحة التحكم / Dashboard</a></li>
+        <li class="breadcrumb-item active">الفترات المحاسبية / Accounting Periods</li>
+    </ol>
+</nav>
+
+<div class="table-container">
+    {% if periods %}
+        <div class="table-responsive">
+            <table class="table table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>اسم الفترة / Period Name</th>
+                        <th>تاريخ البداية / Start Date</th>
+                        <th>تاريخ النهاية / End Date</th>
+                        <th>الحالة / Status</th>
+                        <th>الإجراءات / Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for period in periods %}
+                    <tr>
+                        <td>
+                            <strong>{{ period.name }}</strong>
+                            {% if period.is_current %}
+                                <span class="badge bg-primary ms-2">الحالية / Current</span>
+                            {% endif %}
+                        </td>
+                        <td>{{ period.start_date }}</td>
+                        <td>{{ period.end_date }}</td>
+                        <td>
+                            {% if period.is_closed %}
+                                <span class="badge bg-danger">مقفلة / Closed</span>
+                                <br>
+                                <small class="text-muted">{{ period.closed_at|date:"Y-m-d H:i" }}</small>
+                            {% else %}
+                                <span class="badge bg-success">مفتوحة / Open</span>
+                            {% endif %}
+                        </td>
+                        <td>
+                            <div class="btn-group btn-group-sm" role="group">
+                                <a href="{% url 'accounts:period_detail' period.pk %}" class="btn btn-outline-info" title="عرض / View">
+                                    <i class="fas fa-eye"></i>
+                                </a>
+                                {% if not period.is_closed %}
+                                <a href="{% url 'accounts:period_update' period.pk %}" class="btn btn-outline-primary" title="تعديل / Edit">
+                                    <i class="fas fa-edit"></i>
+                                </a>
+                                <form method="post" action="{% url 'accounts:period_close' period.pk %}" class="d-inline">
+                                    {% csrf_token %}
+                                    <button type="submit" class="btn btn-outline-danger" title="إقفال / Close"
+                                            onclick="return confirm('هل أنت متأكد من إقفال هذه الفترة؟ / Are you sure you want to close this period?')">
+                                        <i class="fas fa-lock"></i>
+                                    </button>
+                                </form>
+                                {% endif %}
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    {% else %}
+        <div class="text-center text-muted py-5">
+            <i class="fas fa-calendar-alt fa-3x mb-3"></i>
+            <h4>لا توجد فترات محاسبية / No Accounting Periods Found</h4>
+            <p>ابدأ بإنشاء فترة محاسبية جديدة / Start by creating a new accounting period</p>
+            <a href="{% url 'accounts:period_create' %}" class="btn btn-primary">
+                <i class="fas fa-plus"></i> إنشاء فترة جديدة / Create New Period
+            </a>
+        </div>
+    {% endif %}
+</div>
+{% endblock %}

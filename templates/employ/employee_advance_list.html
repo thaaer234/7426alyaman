@@ -1,0 +1,187 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+
+{% block content %}
+<div class="module-header">
+    <h2>سلف الموظفين</h2>
+    <div class="header-actions">
+        <a href="{% url 'employ:employee_advance_create' %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> إنشاء سلفة جديدة
+        </a>
+        <a href="{% url 'accounts:dashboard' %}" class="btn btn-info">
+            <i class="fas fa-chart-bar"></i> النظام المحاسبي
+        </a>
+    </div>
+</div>
+
+{% include "partials/_alerts.html" %}
+
+<!-- إحصائيات السلف -->
+<div class="dashboard-cards">
+    <div class="dashboard-card">
+        <div class="dashboard-card-icon bg-primary">
+            <i class="fas fa-hand-holding-usd"></i>
+        </div>
+        <div class="dashboard-card-title">إجمالي السلف</div>
+        <div class="dashboard-card-value">{{ total_advances }}</div>
+        <div class="dashboard-card-change">سلفة</div>
+    </div>
+    
+    <div class="dashboard-card">
+        <div class="dashboard-card-icon bg-warning">
+            <i class="fas fa-clock"></i>
+        </div>
+        <div class="dashboard-card-title">سلف معلقة</div>
+        <div class="dashboard-card-value">{{ outstanding_advances }}</div>
+        <div class="dashboard-card-change">غير مسددة</div>
+    </div>
+    
+    <div class="dashboard-card">
+        <div class="dashboard-card-icon bg-danger">
+            <i class="fas fa-money-bill-wave"></i>
+        </div>
+        <div class="dashboard-card-title">المبلغ المتبقي</div>
+        <div class="dashboard-card-value">{{ total_outstanding_amount|floatformat:2 }}</div>
+        <div class="dashboard-card-change">ليرة سورية</div>
+    </div>
+    
+    <div class="dashboard-card">
+        <div class="dashboard-card-icon bg-success">
+            <i class="fas fa-calculator"></i>
+        </div>
+        <div class="dashboard-card-title">إجمالي المبالغ</div>
+        <div class="dashboard-card-value">{{ total_advance_amount|floatformat:2 }}</div>
+        <div class="dashboard-card-change">ليرة سورية</div>
+    </div>
+</div>
+
+<!-- جدول السلف -->
+<div class="table-container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>رقم السلفة</th>
+                <th>الموظف</th>
+                <th>النوع</th>
+                <th>المبلغ</th>
+                <th>المتبقي</th>
+                <th>التاريخ</th>
+                <th>الحالة</th>
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for advance in advances %}
+            <tr>
+                <td>
+                    <a href="{% url 'employ:employee_advance_detail' advance.pk %}" class="text-decoration-none">
+                        <strong>{{ advance.advance_number }}</strong>
+                    </a>
+                </td>
+                <td>
+                    <div class="d-flex align-items-center gap-2">
+                        <i class="fas fa-user-circle text-primary" style="font-size: 1.5rem;"></i>
+                        <div>
+                            <strong>{{ advance.employee.user.get_full_name }}</strong>
+                            <br>
+                            <small class="text-muted">{{ advance.employee.get_position_display }}</small>
+                        </div>
+                    </div>
+                </td>
+                <td>
+                    <span class="badge 
+                        {% if advance.advance_type == 'salary' %}bg-primary
+                        {% elif advance.advance_type == 'emergency' %}bg-danger
+                        {% elif advance.advance_type == 'medical' %}bg-warning
+                        {% else %}bg-secondary{% endif %}">
+                        {{ advance.get_advance_type_display }}
+                    </span>
+                </td>
+                <td>
+                    <strong class="text-success">{{ advance.amount|floatformat:2 }}</strong>
+                    <small class="text-muted d-block">ل.س</small>
+                </td>
+                <td>
+                    <strong class="{% if advance.outstanding_amount > 0 %}text-danger{% else %}text-success{% endif %}">
+                        {{ advance.outstanding_amount|floatformat:2 }}
+                    </strong>
+                    <small class="text-muted d-block">ل.س</small>
+                </td>
+                <td>{{ advance.date|date:"Y-m-d" }}</td>
+                <td>
+                    {% if advance.is_repaid %}
+                        <div class="status-indicator paid">
+                            <i class="fas fa-check-circle"></i>
+                            تم السداد
+                        </div>
+                    {% else %}
+                        <div class="status-indicator unpaid">
+                            <i class="fas fa-clock"></i>
+                            معلق
+                        </div>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="d-flex gap-1">
+                        <a href="{% url 'employ:employee_advance_detail' advance.pk %}" class="btn btn-sm btn-info">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        {% if advance.journal_entry %}
+                        <a href="{% url 'accounts:journal_entry_detail' advance.journal_entry.pk %}" class="btn btn-sm btn-secondary" title="القيد المحاسبي">
+                            <i class="fas fa-book"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="8" class="text-center">
+                    <div class="p-5">
+                        <i class="fas fa-hand-holding-usd fa-3x text-muted mb-3"></i>
+                        <h5>لا توجد سلف</h5>
+                        <p class="text-muted">لم يتم تسجيل أي سلف للموظفين بعد</p>
+                        <a href="{% url 'employ:employee_advance_create' %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> إنشاء سلفة جديدة
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- روابط سريعة -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="card-title">روابط سريعة</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-3">
+                <a href="{% url 'employ:employee_advance_create' %}" class="btn btn-outline-primary w-100">
+                    <i class="fas fa-plus"></i> سلفة جديدة
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{% url 'accounts:advance_list' %}" class="btn btn-outline-info w-100">
+                    <i class="fas fa-list"></i> سلف النظام المحاسبي
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{% url 'employ:hr' %}" class="btn btn-outline-secondary w-100">
+                    <i class="fas fa-users"></i> إدارة الموظفين
+                </a>
+            </div>
+            <div class="col-md-3">
+                <a href="{% url 'accounts:dashboard' %}" class="btn btn-outline-success w-100">
+                    <i class="fas fa-chart-bar"></i> النظام المحاسبي
+                </a>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

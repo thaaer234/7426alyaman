@@ -1,0 +1,67 @@
+{% extends 'accounts/base.html' %}
+
+
+{% load emp_perms %}
+{% block title %}تفاصيل الحساب / Account Details{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>تفاصيل الحساب / Account Details</h2>
+    <div class="d-flex gap-2">
+        <a href="{% url 'accounts:account_update' object.pk %}" class="btn btn-outline-primary">
+            <i class="fas fa-edit"></i> تعديل / Edit
+        </a>
+        <a href="{% url 'accounts:account_delete' object.pk %}" class="btn btn-outline-danger">
+            <i class="fas fa-trash"></i> حذف / Delete
+        </a>
+    </div>
+</div>
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">لوحة التحكم / Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'accounts:chart_of_accounts' %}">دليل الحسابات / Chart</a></li>
+        <li class="breadcrumb-item active">تفاصيل / Details</li>
+    </ol>
+</nav>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-3">
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">رمز الحساب / Code</dt>
+                    <dd class="col-sm-8">{{ object.code }}</dd>
+
+                    <dt class="col-sm-4">الاسم / Name</dt>
+                    <dd class="col-sm-8">{{ object.name }}{% if object.name_ar %} - {{ object.name_ar }}{% endif %}</dd>
+
+                    <dt class="col-sm-4">النوع / Type</dt>
+                    <dd class="col-sm-8">{{ object.get_account_type_display }}</dd>
+
+                    <dt class="col-sm-4">الرصيد / Balance</dt>
+                    <dd class="col-sm-8">{{ object.balance|floatformat:2 }}</dd>
+
+                    {% if object.parent %}
+                    <dt class="col-sm-4">الحساب الأب / Parent</dt>
+                    <dd class="col-sm-8">
+                        <a href="{% url 'accounts:account_detail' object.parent.pk %}">{{ object.parent.code }} - {{ object.parent.name }}</a>
+                    </dd>
+                    {% endif %}
+
+                    {% if object.description %}
+                    <dt class="col-sm-4">الوصف / Description</dt>
+                    <dd class="col-sm-8">{{ object.description }}</dd>
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
+
+        <a href="{% url 'accounts:ledger' object.id %}" class="btn btn-outline-secondary">
+            <i class="fas fa-book"></i> عرض الدفتر / View Ledger
+        </a>
+    </div>
+</div>
+
+{% endblock %}
+

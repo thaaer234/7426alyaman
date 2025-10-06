@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+
+{% load emp_perms %}
+{% block content %}
+<div class="container py-5">
+    <div class="alert alert-danger text-center">
+        <h3>تأكيد حذف الشعبة</h3>
+        <p>هل أنت متأكد من رغبتك في حذف الشعبة "{{ object.name }}"؟</p>
+        <p class="text-muted">سيتم إزالة جميع الطلاب من هذه الشعبة.</p>
+        <form method="post">
+            {% csrf_token %}
+            <button type="submit" class="btn btn-danger">نعم، احذف</button>
+            <a href="{% url 'classroom:classroom' %}" class="btn btn-secondary">إلغاء</a>
+        </form>
+    </div>
+</div>
+{% endblock %}

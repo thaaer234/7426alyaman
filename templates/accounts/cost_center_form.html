@@ -1,0 +1,32 @@
+{% extends 'accounts/base.html' %}
+
+{% load emp_perms %}
+{% block title %}مركز كلفة{% endblock %}
+{% block content %}
+<h2 class="mb-3">مركز كلفة</h2>
+<form method="post">
+  {% csrf_token %}
+  <div class="mb-3">
+    <label class="form-label">الرمز</label>
+    <input type="text" name="code" value="{{ form.code.value|default_if_none:'' }}" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">الاسم</label>
+    <input type="text" name="name" value="{{ form.name.value|default_if_none:'' }}" class="form-control" required>
+  </div>
+  <div class="mb-3">
+    <label class="form-label">الاسم بالعربية</label>
+    <input type="text" name="name_ar" value="{{ form.name_ar.value|default_if_none:'' }}" class="form-control">
+  </div>
+  <div class="mb-3">
+    <label class="form-label">الوصف</label>
+    <textarea name="description" class="form-control" rows="3">{{ form.description.value|default_if_none:'' }}</textarea>
+  </div>
+  <div class="form-check mb-3">
+    <input class="form-check-input" type="checkbox" name="is_active" id="ccActive" {% if form.is_active.value %}checked{% endif %}>
+    <label class="form-check-label" for="ccActive">نشط</label>
+  </div>
+  <button class="btn btn-primary" type="submit">حفظ</button>
+  <a class="btn btn-secondary" href="{% url 'accounts:cost_center_list' %}">رجوع</a>
+</form>
+{% endblock %}

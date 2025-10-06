@@ -1,0 +1,249 @@
+{% extends 'base.html' %}
+{% load humanize %}
+
+{% block title %}لوحة التقارير المالية - Financial Reports Dashboard{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-12">
+            <div class="card">
+                <div class="card-header">
+                    <h3 class="card-title">
+                        <i class="fas fa-chart-line"></i>
+                        لوحة التقارير المالية - Financial Reports Dashboard
+                    </h3>
+                </div>
+                <div class="card-body">
+                    <!-- Quick Actions -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <a href="{% url 'accounts:cost_center_analysis' %}" class="btn btn-primary btn-block">
+                                <i class="fas fa-chart-bar"></i>
+                                تحليل مراكز التكلفة
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'accounts:cost_center_cash_flow' %}" class="btn btn-success btn-block">
+                                <i class="fas fa-money-bill-wave"></i>
+                                التدفق النقدي
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'accounts:comprehensive_financial' %}" class="btn btn-info btn-block">
+                                <i class="fas fa-file-excel"></i>
+                                تقرير شامل
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="{% url 'accounts:site_export_dashboard' %}" class="btn btn-warning btn-block">
+                                <i class="fas fa-download"></i>
+                                تصدير شامل للموقع
+                            </a>
+                        </div>
+                    </div>
+                    
+                    <!-- Additional Tools -->
+                    <div class="row mb-4">
+                        <div class="col-md-4">
+                            <a href="{% url 'accounts:number_formatter_demo' %}" class="btn btn-info btn-block">
+                                <i class="fas fa-calculator"></i>
+                                تجربة منسق الأرقام
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <a href="{% url 'accounts:reports' %}" class="btn btn-secondary btn-block">
+                                <i class="fas fa-list"></i>
+                                التقارير التقليدية
+                            </a>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="btn btn-success btn-block disabled">
+                                <i class="fas fa-check"></i>
+                                النظام جاهز
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Summary Cards -->
+                    <div class="row mb-4">
+                        <div class="col-md-3">
+                            <div class="card bg-primary text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h4 class="mb-0">{{ cost_center_summary|length }}</h4>
+                                            <p class="mb-0">مراكز التكلفة النشطة</p>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fas fa-building fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-success text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h4 class="mb-0">{{ recent_transactions|length }}</h4>
+                                            <p class="mb-0">المعاملات الأخيرة</p>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fas fa-exchange-alt fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-info text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h4 class="mb-0">{{ monthly_trends|length }}</h4>
+                                            <p class="mb-0">أشهر التحليل</p>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fas fa-calendar-alt fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="card bg-warning text-white">
+                                <div class="card-body">
+                                    <div class="d-flex justify-content-between">
+                                        <div>
+                                            <h4 class="mb-0">Excel</h4>
+                                            <p class="mb-0">تصدير التقارير</p>
+                                        </div>
+                                        <div class="align-self-center">
+                                            <i class="fas fa-file-excel fa-2x"></i>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Cost Center Summary -->
+                    <div class="row">
+                        <div class="col-md-8">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">ملخص مراكز التكلفة - Cost Center Summary</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>الرمز</th>
+                                                    <th>الاسم</th>
+                                                    <th>المصروفات</th>
+                                                    <th>الإيرادات</th>
+                                                    <th>الربح/الخسارة</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for summary in cost_center_summary %}
+                                                <tr>
+                                                    <td>{{ summary.code }}</td>
+                                                    <td>{{ summary.name }}</td>
+                                                    <td class="text-danger">{{ summary.total_expenses|floatformat:2|intcomma }}</td>
+                                                    <td class="text-success">{{ summary.total_revenue|floatformat:2|intcomma }}</td>
+                                                    <td class="{% if summary.profit_loss >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                                        {{ summary.profit_loss|floatformat:2|intcomma }}
+                                                    </td>
+                                                </tr>
+                                                {% empty %}
+                                                <tr>
+                                                    <td colspan="5" class="text-center">لا توجد بيانات</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-md-4">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">المعاملات الأخيرة - Recent Transactions</h5>
+                                </div>
+                                <div class="card-body">
+                                    {% for transaction in recent_transactions %}
+                                    <div class="d-flex justify-content-between align-items-center mb-2">
+                                        <div>
+                                            <small class="text-muted">{{ transaction.journal_entry.date }}</small>
+                                            <br>
+                                            <strong>{{ transaction.account.name_ar|default:transaction.account.name }}</strong>
+                                        </div>
+                                        <div class="text-right">
+                                            <span class="{% if transaction.is_debit %}text-danger{% else %}text-success{% endif %}">
+                                                {{ transaction.amount|floatformat:2|intcomma }}
+                                            </span>
+                                            {% if transaction.cost_center %}
+                                            <br>
+                                            <small class="text-muted">{{ transaction.cost_center.name_ar|default:transaction.cost_center.name }}</small>
+                                            {% endif %}
+                                        </div>
+                                    </div>
+                                    {% empty %}
+                                    <p class="text-center text-muted">لا توجد معاملات</p>
+                                    {% endfor %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Monthly Trends Chart -->
+                    <div class="row mt-4">
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <h5 class="card-title">الاتجاهات الشهرية - Monthly Trends</h5>
+                                </div>
+                                <div class="card-body">
+                                    <div class="table-responsive">
+                                        <table class="table table-striped">
+                                            <thead>
+                                                <tr>
+                                                    <th>الشهر</th>
+                                                    <th>المصروفات</th>
+                                                    <th>الإيرادات</th>
+                                                    <th>الربح/الخسارة</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody>
+                                                {% for trend in monthly_trends %}
+                                                <tr>
+                                                    <td>{{ trend.month }}</td>
+                                                    <td class="text-danger">{{ trend.expenses|floatformat:2|intcomma }}</td>
+                                                    <td class="text-success">{{ trend.revenue|floatformat:2|intcomma }}</td>
+                                                    <td class="{% if trend.profit_loss >= 0 %}text-success{% else %}text-danger{% endif %}">
+                                                        {{ trend.profit_loss|floatformat:2|intcomma }}
+                                                    </td>
+                                                </tr>
+                                                {% empty %}
+                                                <tr>
+                                                    <td colspan="4" class="text-center">لا توجد بيانات</td>
+                                                </tr>
+                                                {% endfor %}
+                                            </tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

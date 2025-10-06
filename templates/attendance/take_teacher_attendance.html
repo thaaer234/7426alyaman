@@ -1,0 +1,114 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+{% block content %}
+{% now "Y-m-d" as today %}
+<div class="module-header">
+    <h2>تسجيل حضور المدرسين</h2>
+</div>
+{% include "partials/_alerts.html" %}
+
+<form method="post">
+    {% csrf_token %}
+    <div class="form-row">  
+        <div class="form-col">
+            <label for="date">التاريخ</label>
+            <input type="date" name="date" id="date" class="form-control" required value="{{ today }}">
+        </div>
+    </div>
+    
+    <div class="table-container mt-4">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th>المدرس</th>
+                    <th>حالة الحضور</th>
+                    <th>عدد الجلسات</th>
+                    <th>ملاحظات</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for teacher in teachers %}
+                <tr>
+                    <td>{{ teacher.full_name }}</td>
+                    <td>
+                        <div class="attendance-container">
+                            <label class="attendance-option present-option">
+                                <input type="radio" name="status_{{ teacher.id }}" value="present" checked>
+                                حاضر
+                            </label>
+                            <label class="attendance-option absent-option">
+                                <input type="radio" name="status_{{ teacher.id }}" value="absent">
+                                غائب
+                            </label>
+                            <label class="attendance-option late-option">
+                                <input type="radio" name="status_{{ teacher.id }}" value="late">
+                                متأخر
+                            </label>
+                            <label class="attendance-option permission-option">
+                                <input type="radio" name="status_{{ teacher.id }}" value="permission">
+                                إذن
+                            </label>
+                        </div>
+                    </td>
+                    <td>
+                        <input type="number" name="sessions_{{ teacher.id }}" 
+                               class="form-control" value="1" min="1" 
+                               style="width: 80px;">
+                    </td>
+                    <td>
+                        <input type="text" name="notes_{{ teacher.id }}" 
+                               class="form-control" placeholder="ملاحظات">
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    <button type="submit" class="btn btn-primary mt-3">حفظ الحضور</button>
+    <a href="{% url 'attendance:teacher_attendance' %}" class="btn btn-secondary mt-3 ml-2">العودة للسجل</a>
+</form>
+
+<style>
+.attendance-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+}
+.attendance-option {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    padding: 5px 8px;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-size: 14px;
+}
+.attendance-option input[type="radio"] {
+    transform: scale(1.1);
+    cursor: pointer;
+}
+.present-option {
+    background-color: rgba(40, 167, 69, 0.1);
+    border: 1px solid #28a745;
+    color: #28a745;
+}
+.absent-option {
+    background-color: rgba(220, 53, 69, 0.1);
+    border: 1px solid #dc3545;
+    color: #dc3545;
+}
+.late-option {
+    background-color: rgba(255, 193, 7, 0.1);
+    border: 1px solid #ffc107;
+    color: #ffc107;
+}
+.permission-option {
+    background-color: rgba(108, 117, 125, 0.1);
+    border: 1px solid #6c757d;
+    color: #6c757d;
+}
+</style>
+{% endblock %}

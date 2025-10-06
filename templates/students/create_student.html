@@ -1,0 +1,695 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row justify-content-center">
+        <div class="col-md-10">
+            <div class="card shadow">
+                <div class="card-header bg-primary text-white">
+                    <h3 class="mb-0 text-center"><i class="fas fa-user-plus mr-2"></i>تسجيل طالب جديد</h3>
+                </div>
+                <div class="card-body">
+                    <form method="POST" enctype="multipart/form-data" action="{% url 'students:create_student' %}">
+                        {% csrf_token %}
+                        
+                        {% if form.errors %}
+                        <div class="alert alert-danger">تحقق من الحقول أدناه.</div>
+                        {% endif %}
+
+                        {% if form.non_field_errors %}
+                        <div class="alert alert-danger">
+                            {% for error in form.non_field_errors %}
+                                {{ error }}
+                            {% endfor %}
+                        </div>
+                        {% endif %}
+
+                        <h4 class="section-title"><i class="fas fa-info-circle mr-2"></i>المعلومات الأساسية</h4>
+                        <div class="alert alert-info mt-2">إن وجد للطالب حسم ثابت، أدخله هنا وسيُطبق تلقائياً عند قطع الإيصال.</div>
+                        <div class="row">
+                            <div class="col-md-4 mb-3">
+                                <label>سبب الحسم</label>
+                                 <select id="discount-reason-select" class="form-control">
+                                    <option value="">اختر سبب الحسم</option>
+                                    <option value="أخوة|جوار |التسجيل خلال شهر 7">أخوة|جوار |التسجيل خلال شهر 7</option>
+                                    <option value="آيتام | معلمين من خارج المعهد ">آيتام | معلمين من خارج المعهد </option>
+                                    <option value="من قبل معلمين أو إداريين المعهد ">من قبل معلمين أو إداريين المعهد </option>
+                                    <option value="طالب متفوق (حصوله 95% من المجموع)">طالب متفوق (حصوله 95% من المجموع)</option>
+                                    <option value="حسم الشلة">حسم الشلة</option>
+                                    <option value="حسم ساعة الغفلة">حسم ساعة الغفلة</option>
+                              </select>
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label>نسبة الحسم الافتراضي %</label>
+                                {{ form.discount_percent }}
+                            </div>
+                            <div class="col-md-4 mb-3">
+                                <label>قيمة الحسم الثابت (ل.س)</label>
+                                {{ form.discount_amount }}
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-md-12 mb-3">
+                                <label>سبب الحسم (تفصيلي)</label>
+                                {{ form.discount_reason }}
+                            </div>
+                        </div>
+                        
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label for="{{ form.full_name.id_for_label }}">
+                                        <span class="icon-wrapper">
+                                            <i class="fas fa-user"></i>
+                                        </span>
+                                        {{ form.full_name.label }}
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.full_name }}
+                                    {% if form.full_name.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.full_name.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label for="{{ form.gender.id_for_label }}">
+                                        <span class="icon-wrapper">
+                                            <i class="fas fa-venus-mars"></i>
+                                        </span>
+                                        {{ form.gender.label }}
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.gender }}
+                                    {% if form.gender.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.gender.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label for="{{ form.branch.id_for_label }}">
+                                        <span class="icon-wrapper">
+                                            <i class="fas fa-graduation-cap"></i>
+                                        </span>
+                                        {{ form.branch.label }}
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.branch }}
+                                    {% if form.branch.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.branch.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label for="{{ form.birth_date.id_for_label }}">
+                                        <span class="icon-wrapper">
+                                            <i class="fas fa-birthday-cake"></i>
+                                        </span>
+                                        {{ form.birth_date.label }}
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.birth_date }}
+                                    {% if form.birth_date.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.birth_date.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label for="{{ form.student_number.id_for_label }}">
+                                        <span class="icon-wrapper">
+                                            <i class="fas fa-id-card"></i>
+                                        </span>
+                                        {{ form.student_number.label }}
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.student_number }}
+                                    {% if form.student_number.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.student_number.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label for="{{ form.nationality.id_for_label }}">
+                                        <span class="icon-wrapper">
+                                            <i class="fas fa-flag"></i>
+                                        </span>
+                                        {{ form.nationality.label }}
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.nationality }}
+                                    {% if form.nationality.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.nationality.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label for="{{ form.registration_date.id_for_label }}">
+                                        <span class="icon-wrapper">
+                                            <i class="fas fa-calendar-alt"></i>
+                                        </span>
+                                        {{ form.registration_date.label }}
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.registration_date }}
+                                    {% if form.registration_date.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.registration_date.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label for="{{ form.tase3.id_for_label }}">
+                                        <span class="icon-wrapper">
+                                            <i class="fas fa-percent"></i>
+                                        </span>
+                                        {{ form.tase3.label }}
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.tase3 }}
+                                    {% if form.tase3.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.tase3.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-12 mb-3">
+                                <div class="form-group">
+                                    <label for="{{ form.disease.id_for_label }}">
+                                        <span class="icon-wrapper">
+                                            <i class="fas fa-heartbeat"></i>
+                                        </span>
+                                        {{ form.disease.label }}
+                                    </label>
+                                    {{ form.disease }}
+                                    {% if form.disease.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.disease.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="section-title mt-4"><i class="fas fa-male mr-2"></i>معلومات ولي الأمر (الأب)</h4>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label for="{{ form.father_name.id_for_label }}">
+                                        <span class="icon-wrapper">
+                                            <i class="fas fa-user-tie"></i>
+                                        </span>
+                                        {{ form.father_name.label }}
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.father_name }}
+                                    {% if form.father_name.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.father_name.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label for="{{ form.father_job.id_for_label }}">
+                                        <span class="icon-wrapper">
+                                            <i class="fas fa-briefcase"></i>
+                                        </span>
+                                        {{ form.father_job.label }}
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.father_job }}
+                                    {% if form.father_job.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.father_job.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label for="{{ form.father_phone.id_for_label }}">
+                                        <span class="icon-wrapper">
+                                            <i class="fas fa-phone"></i>
+                                        </span>
+                                        {{ form.father_phone.label }}
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.father_phone }}
+                                    {% if form.father_phone.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.father_phone.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="section-title mt-4"><i class="fas fa-female mr-2"></i>معلومات ولي الأمر (الأم)</h4>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label for="{{ form.mother_name.id_for_label }}">
+                                        <span class="icon-wrapper">
+                                            <i class="fas fa-user-tie"></i>
+                                        </span>
+                                        {{ form.mother_name.label }}
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.mother_name }}
+                                    {% if form.mother_name.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.mother_name.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label for="{{ form.mother_job.id_for_label }}">
+                                        <span class="icon-wrapper">
+                                            <i class="fas fa-briefcase"></i>
+                                        </span>
+                                        {{ form.mother_job.label }}
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.mother_job }}
+                                    {% if form.mother_job.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.mother_job.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label for="{{ form.mother_phone.id_for_label }}">
+                                        <span class="icon-wrapper">
+                                            <i class="fas fa-phone"></i>
+                                        </span>
+                                        {{ form.mother_phone.label }}
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.mother_phone }}
+                                    {% if form.mother_phone.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.mother_phone.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="section-title mt-4"><i class="fas fa-home mr-2"></i>معلومات السكن</h4>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label for="{{ form.address.id_for_label }}">
+                                        <span class="icon-wrapper">
+                                            <i class="fas fa-map-marker-alt"></i>
+                                        </span>
+                                        {{ form.address.label }}
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.address }}
+                                    {% if form.address.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.address.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label for="{{ form.home_phone.id_for_label }}">
+                                        <span class="icon-wrapper">
+                                            <i class="fas fa-phone-alt"></i>
+                                        </span>
+                                        {{ form.home_phone.label }}
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.home_phone }}
+                                    {% if form.home_phone.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.home_phone.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="section-title mt-4"><i class="fas fa-school mr-2"></i>معلومات الدراسة السابقة</h4>
+                        <div class="row">
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label for="{{ form.previous_school.id_for_label }}">
+                                        <span class="icon-wrapper">
+                                            <i class="fas fa-graduation-cap"></i>
+                                        </span>
+                                        {{ form.previous_school.label }}
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.previous_school }}
+                                    {% if form.previous_school.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.previous_school.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label for="{{ form.elementary_school.id_for_label }}">
+                                        <span class="icon-wrapper">
+                                            <i class="fas fa-graduation-cap"></i>
+                                        </span>
+                                        {{ form.elementary_school.label }}
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.elementary_school }}
+                                    {% if form.elementary_school.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.elementary_school.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="col-md-6 mb-3">
+                                <div class="form-group">
+                                    <label for="{{ form.how_knew_us.id_for_label }}">
+                                        <span class="icon-wrapper">
+                                            <i class="fas fa-question-circle"></i>
+                                        </span>
+                                        كيف عرفت المعهد؟
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.how_knew_us }}
+                                    {% if form.how_knew_us.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.how_knew_us.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <h4 class="section-title mt-4"><i class="fas fa-sticky-note mr-2"></i>ملاحظات</h4>
+                        <div class="row">
+                            <div class="col-12 mb-3">
+                                <div class="form-group">
+                                    <label for="{{ form.notes.id_for_label }}">
+                                        <span class="icon-wrapper">
+                                            <i class="fas fa-edit"></i>
+                                        </span>
+                                        {{ form.notes.label }}
+                                        <span class="text-danger">*</span>
+                                    </label>
+                                    {{ form.notes }}
+                                    {% if form.notes.errors %}
+                                    <div class="invalid-feedback d-block">
+                                        {{ form.notes.errors }}
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="form-group text-center mt-4">
+                            <button type="submit" class="btn btn-primary px-4">
+                                <i class="fas fa-save mr-2"></i> حفظ البيانات
+                            </button>
+                            <a href="{% url 'students:student' %}" class="btn btn-secondary px-4">
+                                <i class="fas fa-times mr-2"></i> إلغاء
+                            </a>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .form-group label {
+        display: flex;
+        align-items: center;
+        margin-bottom: 8px;
+        font-weight: 600;
+        color: #2c3e50;
+    }
+    
+    .icon-wrapper {
+        display: inline-flex;
+        align-items: center;
+        justify-content: center;
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        margin-left: 8px;
+        position: relative;
+    }
+    
+    .icon-wrapper i {
+        color: white;
+        font-size: 14px;
+        z-index: 2;
+        position: relative;
+    }
+    
+    .icon-wrapper::before {
+        content: '';
+        position: absolute;
+        width: 100%;
+        height: 100%;
+        border-radius: 50%;
+        z-index: 1;
+    }
+    
+    .section-title {
+        color: #2c3e50;
+        border-bottom: 2px solid #3498db;
+        padding-bottom: 10px;
+        margin-bottom: 20px;
+        display: flex;
+        align-items: center;
+    }
+    
+    .form-control {
+        border-radius: 5px;
+        padding: 10px 15px;
+        border: 1px solid #ddd;
+    }
+    
+    .form-control:focus {
+        border-color: #3498db;
+        box-shadow: 0 0 0 0.2rem rgba(52, 152, 219, 0.25);
+    }
+    
+    .text-danger {
+        color: #e74c3c;
+        margin-right: 4px;
+    }
+
+    .form-control[readonly] {
+        background-color: #f8f9fa;
+        border-color: #6c757d;
+    }
+
+    .discount-applied {
+        background-color: #d4edda !important;
+        border-color: #c3e6cb !important;
+    }
+</style>
+
+<script>
+    // إنشاء دوائر عشوائية خلف الأيقونات
+    document.addEventListener('DOMContentLoaded', function() {
+        const iconWrappers = document.querySelectorAll('.icon-wrapper');
+        const colors = [
+            'linear-gradient(135deg, #ff9a9e 0%, #fad0c4 100%)',
+            'linear-gradient(135deg, #a1c4fd 0%, #c2e9fb 100%)',
+            'linear-gradient(135deg, #ffecd2 0%, #fcb69f 100%)',
+            'linear-gradient(135deg, #84fab0 0%, #8fd3f4 100%)',
+            'linear-gradient(135deg, #d4fc79 0%, #96e6a1 100%)',
+            'linear-gradient(135deg, #a6c0fe 0%, #f68084 100%)',
+            'linear-gradient(135deg, #fbc2eb 0%, #a6c1ee 100%)',
+            'linear-gradient(135deg, #f6d365 0%, #fda085 100%)',
+            'linear-gradient(135deg, #fccb90 0%, #d57eeb 100%)',
+            'linear-gradient(135deg, #e0c3fc 0%, #8ec5fc 100%)',
+            'linear-gradient(135deg, #f093fb 0%, #f5576c 100%)',
+            'linear-gradient(135deg, #4facfe 0%, #00f2fe 100%)'
+        ];
+        
+        iconWrappers.forEach(wrapper => {
+            // اختيار لون عشوائي من المصفوفة
+            const randomColor = colors[Math.floor(Math.random() * colors.length)];
+            
+            // تعيين الخلفية المتدرجة للدائرة
+            wrapper.style.background = randomColor;
+            
+            // إضافة ظل لنصوع أكثر
+            wrapper.style.boxShadow = '0 4px 8px rgba(0, 0, 0, 0.1)';
+        });
+
+        // Automatic discount application based on reason
+        const discountReasonSelect = document.getElementById('discount-reason-select');
+        const discountPercentInput = document.getElementById('{{ form.discount_percent.id_for_label }}');
+        const discountAmountInput = document.getElementById('{{ form.discount_amount.id_for_label }}');
+        const discountReasonInput = document.getElementById('{{ form.discount_reason.id_for_label }}');
+        
+        if (discountReasonSelect) {
+            discountReasonSelect.addEventListener('change', async function() {
+                const selectedReason = this.value;
+                
+                if (selectedReason) {
+                    try {
+                        // Fetch discount rule from server
+                        const response = await fetch(`/accounts/ajax/discount-rule/${encodeURIComponent(selectedReason)}/`);
+                        const data = await response.json();
+                        
+                        if (data.success) {
+                            // Apply discount values from database
+                            if (discountPercentInput) {
+                                discountPercentInput.value = data.discount_percent;
+                                discountPercentInput.readOnly = true;
+                                discountPercentInput.classList.add('discount-applied');
+                            }
+                            if (discountAmountInput) {
+                                discountAmountInput.value = data.discount_amount;
+                                discountAmountInput.readOnly = true;
+                                discountAmountInput.classList.add('discount-applied');
+                            }
+                            if (discountReasonInput) {
+                                discountReasonInput.value = selectedReason;
+                            }
+                            
+                            // Visual feedback
+                            showDiscountAppliedMessage(data.discount_percent, data.discount_amount);
+                            
+                        } else {
+                            // Fallback to predefined rules if not found in database
+                            applyFallbackDiscount(selectedReason);
+                        }
+                    } catch (error) {
+                        console.error('Error fetching discount rule:', error);
+                        // Fallback to predefined rules
+                        applyFallbackDiscount(selectedReason);
+                    }
+                } else {
+                    // Clear discount fields if no reason selected
+                    clearDiscountFields();
+                }
+            });
+        }
+        
+        function applyFallbackDiscount(reason) {
+            // Predefined discount rules as fallback
+            const discountRules = {
+                'أخوة|جوار |التسجيل خلال شهر 7': { percent: 10, amount: 0 },
+                'آيتام | معلمين من خارج المعهد ': { percent: 15, amount: 0 },
+                'من قبل معلمين أو إداريين المعهد ': { percent: 20, amount: 0 },
+                'طالب متفوق (حصوله 95% من المجموع)': { percent: 20, amount: 0 },
+                'حسم الشلة': { percent: 15, amount: 0 },
+                'حسم ساعة الغفلة': { percent: 0, amount: 1000000 }
+            };
+            
+            if (discountRules[reason]) {
+                const rule = discountRules[reason];
+                
+                if (discountPercentInput) {
+                    discountPercentInput.value = rule.percent;
+                    discountPercentInput.readOnly = true;
+                    discountPercentInput.classList.add('discount-applied');
+                }
+                if (discountAmountInput) {
+                    discountAmountInput.value = rule.amount;
+                    discountAmountInput.readOnly = true;
+                    discountAmountInput.classList.add('discount-applied');
+                }
+                if (discountReasonInput) {
+                    discountReasonInput.value = reason;
+                }
+                
+                showDiscountAppliedMessage(rule.percent, rule.amount);
+            }
+        }
+        
+        function clearDiscountFields() {
+            if (discountPercentInput) {
+                discountPercentInput.value = '0';
+                discountPercentInput.readOnly = false;
+                discountPercentInput.classList.remove('discount-applied');
+            }
+            if (discountAmountInput) {
+                discountAmountInput.value = '0';
+                discountAmountInput.readOnly = false;
+                discountAmountInput.classList.remove('discount-applied');
+            }
+            if (discountReasonInput) {
+                discountReasonInput.value = '';
+            }
+            
+            // Remove any existing alerts
+            const existingAlert = discountReasonSelect.parentNode.querySelector('.alert-success');
+            if (existingAlert) {
+                existingAlert.remove();
+            }
+        }
+        
+        function showDiscountAppliedMessage(percent, amount) {
+            // Visual feedback
+            const alertDiv = document.createElement('div');
+            alertDiv.className = 'alert alert-success mt-2';
+            
+            let message = `<i class="fas fa-check-circle"></i> تم تطبيق حسم: `;
+            if (percent > 0) {
+                message += `${percent}%`;
+            }
+            if (amount > 0) {
+                if (percent > 0) message += ' و ';
+                message += `${amount.toLocaleString()} ل.س`;
+            }
+            
+            alertDiv.innerHTML = message;
+            
+            // Remove existing alerts
+            const existingAlert = discountReasonSelect.parentNode.querySelector('.alert-success');
+            if (existingAlert) {
+                existingAlert.remove();
+            }
+            
+            discountReasonSelect.parentNode.appendChild(alertDiv);
+            
+            // Remove alert after 3 seconds
+            setTimeout(() => {
+                if (alertDiv.parentNode) {
+                    alertDiv.remove();
+                }
+            }, 3000);
+        }
+    });
+</script>
+{% endblock %}

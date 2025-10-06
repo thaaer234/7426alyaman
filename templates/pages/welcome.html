@@ -1,0 +1,169 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+
+{% block content %}
+    <div class="welcome-container">
+        <div class="logo-space">
+            <img src="{% static "img/logo.png" %}" alt="شعار المعهد" class="institute-logo">
+            
+        </div>
+
+        <!-- قسم الترحيب الرئيسي -->
+        <div class="welcome-header">
+            <h1 class="welcome-title">مرحباً بكم في نظام إدارة المعهد</h1>
+            <p class="welcome-subtitle">نظام متكامل لإدارة العمليات التعليمية والإدارية</p>
+        </div>
+
+        <!-- قسم الدخول للنظام -->
+        <div class="login-section">
+            {% if not user.is_authenticated %}
+            <a href="{% url 'login' %}" class="login-btn">
+                <i class="fas fa-sign-in-alt"></i> تسجيل الدخول
+            </a>
+            {% else %}
+            <div class="welcome-message">
+                <p>مرحباً بعودتك، {{ user.get_full_name }}</p>
+            </div>
+            {% endif %}
+        </div>
+</div>
+
+<style>
+    :root {
+        --primary-color: #3498db;
+        --secondary-color: #2c3e50;
+        --accent-color: #f39c12;
+        --light-bg: #f9f9f9;
+    }
+
+    .welcome-container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 2rem;
+        text-align: center;
+        font-family: 'Tajawal', sans-serif;
+    }
+
+    .logo-space {
+        margin: 2rem 0;
+        min-height: 120px;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+    }
+
+    .institute-logo {
+        max-height: 150px;
+        max-width: 100%;
+    }
+
+    .logo-text {
+        color: var(--secondary-color);
+        font-size: 2.5rem;
+        border: 2px dashed #ccc;
+        padding: 1rem 2rem;
+        border-radius: 8px;
+    }
+
+    .welcome-header {
+        margin-bottom: 3rem;
+    }
+
+    .welcome-title {
+        color: var(--secondary-color);
+        font-size: 2.5rem;
+        margin-bottom: 1rem;
+    }
+
+    .welcome-subtitle {
+        color: #666;
+        font-size: 1.2rem;
+        max-width: 800px;
+        margin: 0 auto;
+        line-height: 1.6;
+    }
+
+    .services-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+        gap: 2rem;
+        margin: 3rem 0;
+    }
+
+    .service-card {
+        background: white;
+        padding: 2rem;
+        border-radius: 8px;
+        box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        transition: transform 0.3s ease;
+    }
+
+    .service-card:hover {
+        transform: translateY(-10px);
+    }
+
+    .service-icon {
+        font-size: 3rem;
+        color: var(--primary-color);
+        margin-bottom: 1.5rem;
+    }
+
+    .service-card h3 {
+        color: var(--secondary-color);
+        margin-bottom: 1rem;
+    }
+
+    .service-card p {
+        color: #666;
+        line-height: 1.6;
+    }
+
+    .login-section {
+        margin-top: 3rem;
+    }
+
+    .login-btn, .dashboard-btn {
+        display: inline-block;
+        background: var(--primary-color);
+        color: white;
+        padding: 1rem 2rem;
+        border-radius: 50px;
+        text-decoration: none;
+        font-weight: bold;
+        transition: all 0.3s ease;
+        box-shadow: 0 4px 10px rgba(52, 152, 219, 0.3);
+    }
+
+    .login-btn:hover, .dashboard-btn:hover {
+        background: #2980b9;
+        transform: translateY(-3px);
+        box-shadow: 0 6px 15px rgba(52, 152, 219, 0.4);
+    }
+
+    .welcome-message {
+        background: var(--light-bg);
+        padding: 2rem;
+        border-radius: 8px;
+        max-width: 600px;
+        margin: 0 auto;
+    }
+
+    .welcome-message p {
+        font-size: 1.2rem;
+        margin-bottom: 1.5rem;
+        color: var(--secondary-color);
+    }
+
+    @media (max-width: 768px) {
+        .welcome-title {
+            font-size: 2rem;
+        }
+        
+        .services-grid {
+            grid-template-columns: 1fr;
+        }
+    }
+</style>
+{% endblock %}

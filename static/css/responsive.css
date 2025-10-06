@@ -1,0 +1,149 @@
+/* أنماط متجاوبة لجميع الأجهزة */
+
+/* هواتف صغيرة - أقل من 576px */
+@media (max-width: 575.98px) {
+    /* تعديلات عامة */
+    body {
+        font-size: 14px;
+    }
+    
+    /* تحسين الـ Modals للهواتف */
+    .modal-content {
+        margin: 10% auto;
+        width: 95%;
+        padding: 15px;
+    }
+    
+    .modal-title {
+        font-size: 1.2rem;
+    }
+    
+    /* تعديلات على القوائم */
+    .sidebar {
+        width: 70px;
+    }
+    
+    .sidebar-menu .menu-item span {
+        display: none;
+    }
+    
+    .sidebar-menu .menu-item i {
+        margin-left: 0;
+        font-size: 1.2rem;
+    }
+    
+    .main-content {
+        margin-right: 70px;
+    }
+    
+    /* تعديلات على الجداول */
+    .table-container {
+        overflow-x: auto;
+        padding: 5px;
+    }
+    
+    .table {
+        font-size: 12px;
+    }
+    
+    .table th, .table td {
+        padding: 8px 5px;
+    }
+    
+    /* تعديلات على النماذج */
+    .form-row {
+        flex-direction: column;
+    }
+    
+    .form-col {
+        padding: 0;
+        margin-bottom: 10px;
+    }
+    
+    /* تعديلات على الأزرار */
+    .btn {
+        padding: 8px 15px;
+        font-size: 14px;
+    }
+}
+
+/* أجهزة متوسطة - من 576px إلى 767px */
+@media (min-width: 576px) and (max-width: 767.98px) {
+    .modal-content {
+        width: 90%;
+        max-width: 100%;
+    }
+    
+    .sidebar {
+        width: 180px;
+    }
+    
+    .main-content {
+        margin-right: 180px;
+    }
+    
+    .form-row {
+        flex-wrap: wrap;
+    }
+    
+    .form-col {
+        min-width: calc(50% - 20px);
+    }
+}
+
+/* أجهزة كبيرة - من 768px إلى 991px */
+@media (min-width: 768px) and (max-width: 991.98px) {
+    .modal-content {
+        width: 85%;
+    }
+    
+    .sidebar {
+        width: 220px;
+    }
+    
+    .main-content {
+        margin-right: 220px;
+    }
+}
+
+/* تعديلات للوضع الأفقي في الهواتف */
+@media (max-height: 500px) {
+    .modal-content {
+        margin: 2% auto;
+        max-height: 96vh;
+        overflow-y: auto;
+    }
+}
+
+/* تعديلات للشاشات الصغيرة جداً */
+@media (max-width: 400px) {
+    .modal-content {
+        padding: 15px 10px;
+    }
+    
+    .modal-title {
+        font-size: 1.1rem;
+    }
+    
+    .close {
+        font-size: 24px;
+    }
+    
+    /* تعديلات على تنسيق النصوص */
+    h1, h2, h3 {
+        font-size: 1.3rem;
+    }
+    
+    /* تعديلات على بطاقات المعلومات */
+    .card {
+        padding: 15px;
+    }
+    
+    .card-title {
+        font-size: 14px;
+    }
+    
+    .card-value {
+        font-size: 20px;
+    }
+}

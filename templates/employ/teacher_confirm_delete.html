@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% block content %}
+<div class="container py-4">
+  <div class="card shadow-sm">
+    <div class="card-header bg-danger text-white">
+      <h5 class="mb-0"><i class="fas fa-user-slash me-2"></i> تأكيد حذف المعلم</h5>
+    </div>
+    <div class="card-body">
+      <p class="lead">هل أنت متأكد من رغبتك في حذف بيانات المعلم <strong>{{ object.full_name }}</strong>؟ لا يمكن التراجع عن هذا الإجراء.</p>
+      <form method="post">
+        {% csrf_token %}
+        <div class="d-flex gap-2">
+          <button type="submit" class="btn btn-danger">
+            <i class="fas fa-trash-alt"></i> حذف نهائي
+          </button>
+          <a href="{% url 'employ:teachers' %}" class="btn btn-secondary">
+            إلغاء والعودة
+          </a>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+{% endblock %}

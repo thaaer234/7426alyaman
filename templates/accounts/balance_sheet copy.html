@@ -1,0 +1,238 @@
+{% extends 'accounts/base.html' %}
+
+
+{% load emp_perms %}
+{% block title %}الميزانية العمومية / Balance Sheet{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>الميزانية العمومية / Balance Sheet</h2>
+    <div>
+        <a href="?export=excel" class="btn btn-success">
+            <i class="fas fa-file-excel"></i> تصدير Excel / Export Excel
+        </a>
+        <button onclick="window.print()" class="btn btn-outline-secondary">
+            <i class="fas fa-print"></i> طباعة / Print
+        </button>
+    </div>
+</div>
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">لوحة التحكم / Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'accounts:reports' %}">التقارير / Reports</a></li>
+        <li class="breadcrumb-item active">الميزانية العمومية / Balance Sheet</li>
+    </ol>
+</nav>
+
+<div class="table-container">
+    <div class="text-center mb-4">
+        <h3>الميزانية العمومية</h3>
+        <h4>Balance Sheet</h4>
+        <p class="text-muted">كما في تاريخ: {{ "now"|date:"Y-m-d" }} / As of: {{ "now"|date:"Y-m-d" }}</p>
+    </div>
+    
+    <div class="row">
+        <!-- Assets Column -->
+        <div class="col-md-6">
+            <div class="table-responsive">
+                <table class="table table-bordered h-100">
+                    <thead class="table-success">
+                        <tr>
+                            <th colspan="2" class="text-center">
+                                <h5 class="mb-0">الأصول / ASSETS</h5>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for account in asset_accounts %}
+                        {% if account.get_net_balance != 0 %}
+                        <tr>
+                            <td>
+                                <a href="{{ account.get_absolute_url }}" class="text-decoration-none">
+                                    {{ account.code }} - {{ account.display_name }}
+                                </a>
+                            </td>
+                            <td class="text-end">{{ account.get_net_balance|floatformat:2 }}</td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                        
+                        <!-- Spacer rows to match height -->
+                        {% for i in "123456789" %}
+                        <tr style="height: 40px;">
+                            <td>&nbsp;</td>
+                            <td>&nbsp;</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                    <tfoot class="table-success">
+                        <tr>
+                            <th>إجمالي الأصول / Total Assets</th>
+                            <th class="text-end">{{ total_assets|floatformat:2 }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+        
+        <!-- Liabilities and Equity Column -->
+        <div class="col-md-6">
+            <div class="table-responsive">
+                <table class="table table-bordered h-100">
+                    <thead class="table-warning">
+                        <tr>
+                            <th colspan="2" class="text-center">
+                                <h5 class="mb-0">الخصوم / LIABILITIES</h5>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for account in liability_accounts %}
+                        {% if account.get_net_balance != 0 %}
+                        <tr>
+                            <td>
+                                <a href="{{ account.get_absolute_url }}" class="text-decoration-none">
+                                    {{ account.code }} - {{ account.display_name }}
+                                </a>
+                            </td>
+                            <td class="text-end">{{ account.get_net_balance|floatformat:2 }}</td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                        <tr class="table-warning">
+                            <th>إجمالي الخصوم / Total Liabilities</th>
+                            <th class="text-end">{{ total_liabilities|floatformat:2 }}</th>
+                        </tr>
+                    </tbody>
+                </table>
+            </div>
+            
+            <div class="table-responsive mt-3">
+                <table class="table table-bordered">
+                    <thead class="table-info">
+                        <tr>
+                            <th colspan="2" class="text-center">
+                                <h5 class="mb-0">حقوق الملكية / EQUITY</h5>
+                            </th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for account in equity_accounts %}
+                        {% if account.get_net_balance != 0 %}
+                        <tr>
+                            <td>
+                                <a href="{{ account.get_absolute_url }}" class="text-decoration-none">
+                                    {{ account.code }} - {{ account.display_name }}
+                                </a>
+                            </td>
+                            <td class="text-end">{{ account.get_net_balance|floatformat:2 }}</td>
+                        </tr>
+                        {% endif %}
+                        {% endfor %}
+                        <tr class="table-info">
+                            <th>إجمالي حقوق الملكية / Total Equity</th>
+                            <th class="text-end">{{ total_equity|floatformat:2 }}</th>
+                        </tr>
+                    </tbody>
+                    <tfoot class="table-dark">
+                        <tr>
+                            <th>إجمالي الخصوم وحقوق الملكية<br>Total Liabilities & Equity</th>
+                            <th class="text-end">{{ total_liabilities|add:total_equity|floatformat:2 }}</th>
+                        </tr>
+                    </tfoot>
+                </table>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row mt-4">
+        <div class="col-md-12">
+            <div class="card">
+                <div class="card-body">
+                    <h5 class="card-title">تحليل الميزانية / Balance Sheet Analysis</h5>
+                    
+                    <div class="row text-center">
+                        <div class="col-md-3">
+                            <div class="border rounded p-3">
+                                <h6 class="text-muted">إجمالي الأصول / Total Assets</h6>
+                                <div class="fs-4 fw-bold text-success">{{ total_assets|floatformat:2 }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border rounded p-3">
+                                <h6 class="text-muted">إجمالي الخصوم / Total Liabilities</h6>
+                                <div class="fs-4 fw-bold text-warning">{{ total_liabilities|floatformat:2 }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border rounded p-3">
+                                <h6 class="text-muted">حقوق الملكية / Total Equity</h6>
+                                <div class="fs-4 fw-bold text-info">{{ total_equity|floatformat:2 }}</div>
+                            </div>
+                        </div>
+                        <div class="col-md-3">
+                            <div class="border rounded p-3">
+                                <h6 class="text-muted">نسبة الدين / Debt Ratio</h6>
+                                <div class="fs-4 fw-bold text-primary">
+                                    {% if total_assets > 0 %}
+                                        {% widthratio total_liabilities total_assets 100 %}%
+                                    {% else %}
+                                        0.0%
+                                    {% endif %}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="mt-3">
+                        {% with balance_check=total_assets|add:"-"|add:total_liabilities|add:"-"|add:total_equity %}
+                        {% if balance_check == "0.00" or balance_check == "0" %}
+                            <div class="alert alert-success">
+                                <i class="fas fa-check-circle"></i>
+                                <strong>الميزانية متوازنة / Balance Sheet is Balanced</strong>
+                                <br>
+                                الأصول ({{ total_assets|floatformat:2 }}) = الخصوم + حقوق الملكية ({{ total_liabilities|add:total_equity|floatformat:2 }})
+                                <br>
+                                Assets ({{ total_assets|floatformat:2 }}) = Liabilities + Equity ({{ total_liabilities|add:total_equity|floatformat:2 }})
+                            </div>
+                        {% else %}
+                            <div class="alert alert-danger">
+                                <i class="fas fa-exclamation-triangle"></i>
+                                <strong>الميزانية غير متوازنة / Balance Sheet is Not Balanced</strong>
+                                <br>
+                                يرجى مراجعة القيود والحسابات / Please review journal entries and accounts
+                            </div>
+                        {% endif %}
+                        {% endwith %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    @media print {
+        .sidebar, .breadcrumb, .btn, nav {
+            display: none !important;
+        }
+        
+        .main-content {
+            margin-right: 0 !important;
+        }
+        
+        .table-container {
+            box-shadow: none !important;
+        }
+        
+        body {
+            font-size: 12px;
+        }
+        
+        .table th, .table td {
+            padding: 0.5rem !important;
+        }
+    }
+</style>
+{% endblock %}

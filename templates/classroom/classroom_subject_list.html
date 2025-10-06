@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% block content %}
+<h2>مواد شعبة: {{ classroom.name }}</h2>
+<a href="{% url 'classroom:classroom_subject_create' classroom.id %}" class="btn btn-primary">إضافة مادة للشعبة</a>
+{% include "partials/_alerts.html" %}
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>المادة</th>
+            <th>المعلم/المعلمين</th>
+            <th>النوع</th>
+        </tr>
+    </thead>
+    <tbody>
+        {% for cs in object_list %}
+        <tr>
+            <td>{{ cs.subject.name }}</td>
+            <td>
+                {% if cs.subject.teachers.all %}
+                    {% for teacher in cs.subject.teachers.all %}
+                        {{ teacher.full_name }}{% if not forloop.last %}, {% endif %}
+                    {% endfor %}
+                {% else %}
+                    <span class="text-muted">لا يوجد معلم</span>
+                {% endif %}
+            </td>
+            <td>{{ cs.subject.get_subject_type_display }}</td>
+        </tr>
+        {% empty %}
+        <tr>
+            <td colspan="3" class="text-center">لا توجد مواد في هذه الشعبة</td>
+        </tr>
+        {% endfor %}
+    </tbody>
+</table>
+{% endblock %}

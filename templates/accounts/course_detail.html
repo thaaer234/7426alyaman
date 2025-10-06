@@ -1,0 +1,61 @@
+{% extends 'accounts/base.html' %}
+
+
+{% load emp_perms %}
+{% block title %}تفاصيل الدورة / Course Details{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h2>تفاصيل الدورة / Course Details</h2>
+    <div class="d-flex gap-2">
+        <a href="{% url 'accounts:course_update' object.pk %}" class="btn btn-outline-primary">
+            <i class="fas fa-edit"></i> تعديل / Edit
+        </a>
+        <a href="{% url 'accounts:course_list' %}" class="btn btn-secondary">رجوع / Back</a>
+    </div>
+</div>
+
+<nav aria-label="breadcrumb">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'accounts:dashboard' %}">لوحة التحكم / Dashboard</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'accounts:course_list' %}">الدورات / Courses</a></li>
+        <li class="breadcrumb-item active">تفاصيل / Details</li>
+    </ol>
+    
+</nav>
+
+<div class="row">
+    <div class="col-md-8">
+        <div class="card mb-3">
+            <div class="card-body">
+                <dl class="row mb-0">
+                    <dt class="col-sm-4">الاسم / Name</dt>
+                    <dd class="col-sm-8">{{ object.name }}{% if object.name_ar %} - {{ object.name_ar }}{% endif %}</dd>
+
+                    <dt class="col-sm-4">السعر / Price</dt>
+                    <dd class="col-sm-8">{{ object.price|floatformat:2 }}</dd>
+
+                    <dt class="col-sm-4">المدة (ساعات) / Duration (hrs)</dt>
+                    <dd class="col-sm-8">{{ object.duration_hours }}</dd>
+
+                    <dt class="col-sm-4">الحالة / Status</dt>
+                    <dd class="col-sm-8">
+                        {% if object.is_active %}
+                            <span class="badge bg-success">نشط / Active</span>
+                        {% else %}
+                            <span class="badge bg-secondary">متوقف / Inactive</span>
+                        {% endif %}
+                    </dd>
+
+                    {% if object.description %}
+                    <dt class="col-sm-4">الوصف / Description</dt>
+                    <dd class="col-sm-8">{{ object.description }}</dd>
+                    {% endif %}
+                </dl>
+            </div>
+        </div>
+    </div>
+</div>
+
+{% endblock %}
+

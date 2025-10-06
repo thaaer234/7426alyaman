@@ -1,0 +1,189 @@
+/**
+ * CSS Styles for Number Formatter Plugin
+ * Provides visual feedback and styling for formatted number inputs
+ */
+
+/* Base styling for formatted number inputs */
+.number-formatted {
+    font-family: 'Courier New', monospace;
+    text-align: right;
+    direction: ltr;
+}
+
+/* Currency input styling */
+.number-formatted.currency-input {
+    padding-left: 2.5rem;
+    position: relative;
+}
+
+.number-formatted.currency-input::before {
+    content: attr(data-prefix);
+    position: absolute;
+    left: 0.75rem;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #6c757d;
+    font-weight: 500;
+    pointer-events: none;
+    z-index: 1;
+}
+
+/* Focus state styling */
+.number-formatted:focus {
+    border-color: #007bff;
+    box-shadow: 0 0 0 0.2rem rgba(0, 123, 255, 0.25);
+}
+
+/* Disabled state */
+.number-formatted:disabled {
+    background-color: #e9ecef;
+    opacity: 1;
+}
+
+/* Readonly state */
+.number-formatted[readonly] {
+    background-color: #f8f9fa;
+    cursor: default;
+}
+
+/* Error state */
+.number-formatted.is-invalid {
+    border-color: #dc3545;
+}
+
+.number-formatted.is-invalid:focus {
+    border-color: #dc3545;
+    box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.25);
+}
+
+/* Success state */
+.number-formatted.is-valid {
+    border-color: #28a745;
+}
+
+.number-formatted.is-valid:focus {
+    border-color: #28a745;
+    box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.25);
+}
+
+/* Large number input styling */
+.number-formatted.input-lg {
+    padding: 0.75rem 1rem;
+    font-size: 1.25rem;
+    border-radius: 0.3rem;
+}
+
+/* Small number input styling */
+.number-formatted.input-sm {
+    padding: 0.25rem 0.5rem;
+    font-size: 0.875rem;
+    border-radius: 0.2rem;
+}
+
+/* Arabic/RTL support */
+[dir="rtl"] .number-formatted {
+    text-align: left;
+    direction: rtl;
+}
+
+[dir="rtl"] .number-formatted.currency-input {
+    padding-right: 2.5rem;
+    padding-left: 0.75rem;
+}
+
+[dir="rtl"] .number-formatted.currency-input::before {
+    right: 0.75rem;
+    left: auto;
+}
+
+/* Animation for value changes */
+.number-formatted {
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+/* Highlight comma separators */
+.number-formatted::after {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: linear-gradient(90deg, 
+        transparent 0%, 
+        transparent 20%, 
+        rgba(0, 123, 255, 0.1) 20%, 
+        rgba(0, 123, 255, 0.1) 80%, 
+        transparent 80%, 
+        transparent 100%);
+    pointer-events: none;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+}
+
+.number-formatted:focus::after {
+    opacity: 1;
+}
+
+/* Custom input group styling */
+.input-group .number-formatted {
+    border-top-right-radius: 0;
+    border-bottom-right-radius: 0;
+}
+
+.input-group .number-formatted:focus {
+    z-index: 3;
+}
+
+/* Bootstrap integration */
+.form-control.number-formatted {
+    display: block;
+    width: 100%;
+    padding: 0.375rem 0.75rem;
+    font-size: 1rem;
+    font-weight: 400;
+    line-height: 1.5;
+    color: #495057;
+    background-color: #fff;
+    background-clip: padding-box;
+    border: 1px solid #ced4da;
+    border-radius: 0.25rem;
+    transition: border-color 0.15s ease-in-out, box-shadow 0.15s ease-in-out;
+}
+
+/* Dark mode support */
+@media (prefers-color-scheme: dark) {
+    .number-formatted {
+        background-color: #343a40;
+        border-color: #495057;
+        color: #fff;
+    }
+    
+    .number-formatted:focus {
+        background-color: #343a40;
+        border-color: #80bdff;
+        color: #fff;
+    }
+    
+    .number-formatted:disabled {
+        background-color: #495057;
+        opacity: 1;
+    }
+    
+    .number-formatted[readonly] {
+        background-color: #495057;
+    }
+}
+
+/* Print styles */
+@media print {
+    .number-formatted {
+        border: 1px solid #000;
+        background-color: transparent;
+        color: #000;
+    }
+    
+    .number-formatted:focus {
+        box-shadow: none;
+    }
+}

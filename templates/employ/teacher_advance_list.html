@@ -1,0 +1,189 @@
+{% extends "base.html" %}
+
+{% load emp_perms %}
+{% load static %}
+
+{% block content %}
+<div class="module-header">
+    <h2>سلف المدرس: {{ teacher.full_name }}</h2>
+    <div class="header-actions">
+        <a href="{% url 'employ:teacher_advance_create' teacher.id %}" class="btn btn-primary">
+            <i class="fas fa-plus"></i> إنشاء سلفة جديدة
+        </a>
+        <a href="{% url 'employ:teacher_profile' teacher.id %}" class="btn btn-secondary">
+            <i class="fas fa-arrow-left"></i> العودة للملف الشخصي
+        </a>
+    </div>
+</div>
+
+{% include "partials/_alerts.html" %}
+
+<!-- إحصائيات السلف -->
+<div class="dashboard-cards">
+    <div class="dashboard-card">
+        <div class="dashboard-card-icon bg-primary">
+            <i class="fas fa-hand-holding-usd"></i>
+        </div>
+        <div class="dashboard-card-title">إجمالي السلف</div>
+        <div class="dashboard-card-value">{{ advances.count }}</div>
+        <div class="dashboard-card-change">سلفة</div>
+    </div>
+    
+    <div class="dashboard-card">
+        <div class="dashboard-card-icon bg-warning">
+            <i class="fas fa-clock"></i>
+        </div>
+        <div class="dashboard-card-title">سلف معلقة</div>
+        <div class="dashboard-card-value">{{ advances|length }}</div>
+        <div class="dashboard-card-change">غير مسددة</div>
+    </div>
+    
+    <div class="dashboard-card">
+        <div class="dashboard-card-icon bg-success">
+            <i class="fas fa-money-bill-wave"></i>
+        </div>
+        <div class="dashboard-card-title">إجمالي المبالغ</div>
+        <div class="dashboard-card-value">{{ teacher.get_total_advances|floatformat:2 }}</div>
+        <div class="dashboard-card-change">ليرة سورية</div>
+    </div>
+    
+    <div class="dashboard-card">
+        <div class="dashboard-card-icon bg-info">
+        <i class="fas fa-calculator"></i>
+        </div>
+        <div class="dashboard-card-title">الراتب الصافي</div>
+        <div class="dashboard-card-value">{{ teacher.calculate_net_salary|floatformat:2 }}</div>
+        <div class="dashboard-card-change">بعد خصم السلف</div>
+    </div>
+</div>
+
+<!-- جدول السلف -->
+<div class="table-container">
+    <table class="table">
+        <thead>
+            <tr>
+                <th>التاريخ</th>
+                <th>المبلغ</th>
+                <th>الغرض</th>
+                <th>المتبقي</th>
+                <th>الحالة</th>
+                <th>القيد المحاسبي</th>
+                <th>الإجراءات</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for advance in advances %}
+            <tr>
+                <td>{{ advance.date|date:"Y-m-d" }}</td>
+                <td>
+                    <strong class="text-success">{{ advance.amount|floatformat:2 }}</strong>
+                    <small class="text-muted d-block">ل.س</small>
+                </td>
+                <td>{{ advance.purpose|truncatechars:50 }}</td>
+                <td>
+                    <strong class="{% if advance.outstanding_amount > 0 %}text-warning{% else %}text-success{% endif %}">
+                        {{ advance.outstanding_amount|floatformat:2 }}
+                    </strong>
+                    <small class="text-muted d-block">ل.س</small>
+                </td>
+                <td>
+                    {% if advance.is_repaid %}
+                        <div class="status-indicator paid">
+                            <i class="fas fa-check-circle"></i>
+                            تم السداد
+                        </div>
+                    {% else %}
+                        <div class="status-indicator unpaid">
+                            <i class="fas fa-clock"></i>
+                            معلق
+                        </div>
+                    {% endif %}
+                </td>
+                <td>
+                    {% if advance.journal_entry %}
+                        <a href="{% url 'accounts:journal_entry_detail' advance.journal_entry.pk %}" 
+                           class="btn btn-sm btn-outline-secondary">
+                            <i class="fas fa-book"></i> {{ advance.journal_entry.reference }}
+                        </a>
+                    {% else %}
+                        <span class="text-muted">لا يوجد</span>
+                    {% endif %}
+                </td>
+                <td>
+                    <div class="d-flex gap-1">
+                        {% if advance.journal_entry %}
+                        <a href="{% url 'accounts:journal_entry_detail' advance.journal_entry.pk %}" 
+                           class="btn btn-sm btn-info" title="عرض القيد">
+                            <i class="fas fa-eye"></i>
+                        </a>
+                        {% endif %}
+                    </div>
+                </td>
+            </tr>
+            {% empty %}
+            <tr>
+                <td colspan="7" class="text-center">
+                    <div class="p-5">
+                        <i class="fas fa-hand-holding-usd fa-3x text-muted mb-3"></i>
+                        <h5>لا توجد سلف</h5>
+                        <p class="text-muted">لم يتم تسجيل أي سلف لهذا المدرس بعد</p>
+                        <a href="{% url 'employ:teacher_advance_create' teacher.id %}" class="btn btn-primary">
+                            <i class="fas fa-plus"></i> إنشاء سلفة جديدة
+                        </a>
+                    </div>
+                </td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+</div>
+
+<!-- معلومات إضافية -->
+<div class="card mt-4">
+    <div class="card-header">
+        <h5 class="card-title">معلومات الحسابات المحاسبية</h5>
+    </div>
+    <div class="card-body">
+        <div class="row">
+            <div class="col-md-4">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <h6 class="card-title">حساب السلف</h6>
+                        <div class="fw-bold">{{ teacher.get_teacher_advance_account.code }}</div>
+                        <small class="text-muted">{{ teacher.get_teacher_advance_account.name }}</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <h6 class="card-title">حساب المستحقات</h6>
+                        <div class="fw-bold">{{ teacher.get_teacher_dues_account.code }}</div>
+                        <small class="text-muted">{{ teacher.get_teacher_dues_account.name }}</small>
+                    </div>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="card bg-light">
+                    <div class="card-body text-center">
+                        <h6 class="card-title">حساب الرواتب</h6>
+                        <div class="fw-bold">{{ teacher.get_salary_account.code }}</div>
+                        <small class="text-muted">{{ teacher.get_salary_account.name }}</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="alert alert-info mt-3">
+            <i class="fas fa-info-circle"></i>
+            <strong>آلية عمل السلف:</strong>
+            <ul class="mt-2 mb-0">
+                <li>عند إنشاء السلفة: مدين حساب السلف، دائن النقدية</li>
+                <li>عند دفع الراتب: مدين حساب المستحقات، دائن النقدية + دائن حساب السلف</li>
+                <li>يتم خصم السلف تلقائياً من الراتب الشهري</li>
+                <li>الراتب الصافي = الراتب الإجمالي - السلف المستحقة</li>
+            </ul>
+        </div>
+    </div>
+</div>
+{% endblock %}
