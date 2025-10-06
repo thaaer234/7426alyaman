@@ -1,0 +1,448 @@
+{% load static emp_perms %}
+{% load humanize %}
+
+<!-- Employee Content Sections -->
+<div class="employee-content-sections">
+    <!-- Personal Information Section -->
+    <div id="personal-info-section" class="content-section active">
+        <div class="section-header">
+            <h2>
+                <i class="fas fa-id-card"></i>
+                البيانات الشخصية
+            </h2>
+            <button class="edit-btn" onclick="editPersonalInfo()">
+                <i class="fas fa-edit"></i>
+                تعديل
+            </button>
+        </div>
+        
+        <div class="info-grid">
+            <div class="info-card">
+                <div class="info-item">
+                    <label>الاسم الكامل</label>
+                    <value>{{ user.get_full_name }}</value>
+                </div>
+                <div class="info-item">
+                    <label>رقم الموظف</label>
+                    <value>{{ user.employee_profile.employee_id|default:user.id }}</value>
+                </div>
+                <div class="info-item">
+                    <label>القسم</label>
+                    <value>{{ user.employee_profile.get_position_display|default:"غير محدد" }}</value>
+                </div>
+                <div class="info-item">
+                    <label>تاريخ التعيين</label>
+                    <value>{{ user.employee_profile.hire_date|date:"Y-m-d"|default:"غير محدد" }}</value>
+                </div>
+            </div>
+            
+            <div class="info-card">
+                <div class="info-item">
+                    <label>البريد الإلكتروني</label>
+                    <value>{{ user.email|default:"غير محدد" }}</value>
+                </div>
+                <div class="info-item">
+                    <label>رقم الهاتف</label>
+                    <value>{{ user.employee_profile.phone_number|default:"غير محدد" }}</value>
+                </div>
+                <div class="info-item">
+                    <label>الحالة الوظيفية</label>
+                    <value>
+                        <span class="status-badge active">نشط</span>
+                    </value>
+                </div>
+                <div class="info-item">
+                    <label>آخر تسجيل دخول</label>
+                    <value>{{ user.last_login|date:"Y-m-d H:i"|default:"غير متوفر" }}</value>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Leave Submission Section -->
+    <div id="submit-leave-section" class="content-section">
+        <div class="section-header">
+            <h2>
+                <i class="fas fa-plus-circle"></i>
+                طلب إجازة جديد
+            </h2>
+        </div>
+        
+        <form id="leaveRequestForm" class="leave-form">
+            {% csrf_token %}
+            <div class="form-grid">
+                <div class="form-group">
+                    <label for="leaveType">نوع الإجازة</label>
+                    <select id="leaveType" name="vacation_type" class="form-control" required>
+                        <option value="">اختر نوع الإجازة</option>
+                        <option value="annual">إجازة سنوية</option>
+                        <option value="sick">إجازة مرضية</option>
+                        <option value="emergency">إجازة طارئة</option>
+                        <option value="maternity">إجازة أمومة</option>
+                        <option value="paternity">إجازة أبوة</option>
+                        <option value="study">إجازة دراسية</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="leaveDuration">مدة الإجازة</label>
+                    <select id="leaveDuration" name="duration_type" class="form-control" required>
+                        <option value="">اختر المدة</option>
+                        <option value="half_day">نصف يوم</option>
+                        <option value="full_day">يوم كامل</option>
+                        <option value="multiple_days">عدة أيام</option>
+                    </select>
+                </div>
+                
+                <div class="form-group">
+                    <label for="startDate">تاريخ البداية</label>
+                    <input type="date" id="startDate" name="start_date" class="form-control" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="endDate">تاريخ النهاية</label>
+                    <input type="date" id="endDate" name="end_date" class="form-control" required>
+                </div>
+                
+                <div class="form-group full-width">
+                    <label for="leaveReason">سبب الإجازة</label>
+                    <textarea id="leaveReason" name="reason" class="form-control" rows="4" 
+                              placeholder="اذكر سبب طلب الإجازة بالتفصيل..." required></textarea>
+                </div>
+                
+                <div class="form-group full-width">
+                    <div class="checkbox-group">
+                        <label class="checkbox-label">
+                            <input type="checkbox" name="is_replacement_secured" id="replacementSecured">
+                            <span class="checkmark"></span>
+                            تم تأمين البديل
+                        </label>
+                    </div>
+                </div>
+                
+                <div class="form-group full-width">
+                    <label for="attachments">المرفقات (اختياري)</label>
+                    <div class="file-upload-area">
+                        <input type="file" id="attachments" name="attachments" multiple 
+                               accept=".pdf,.doc,.docx,.jpg,.jpeg,.png">
+                        <div class="upload-placeholder">
+                            <i class="fas fa-cloud-upload-alt"></i>
+                            <span>اسحب الملفات هنا أو انقر للاختيار</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="form-actions">
+                <button type="submit" class="btn btn-primary">
+                    <i class="fas fa-paper-plane"></i>
+                    إرسال الطلب
+                </button>
+                <button type="reset" class="btn btn-secondary">
+                    <i class="fas fa-undo"></i>
+                    إعادة تعيين
+                </button>
+            </div>
+        </form>
+    </div>
+
+    <!-- Leave History Section -->
+    <div id="leave-history-section" class="content-section">
+        <div class="section-header">
+            <h2>
+                <i class="fas fa-history"></i>
+                تاريخ الإجازات
+            </h2>
+            <div class="header-filters">
+                <select id="statusFilter" class="form-control">
+                    <option value="">جميع الحالات</option>
+                    <option value="pending">قيد المراجعة</option>
+                    <option value="approved">موافق عليها</option>
+                    <option value="rejected">مرفوضة</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="leave-history-list">
+            {% for vacation in user.employee_profile.vacations.all|slice:":10" %}
+            <div class="leave-item">
+                <div class="leave-header">
+                    <div class="leave-type">
+                        <i class="fas fa-calendar-times"></i>
+                        <span>{{ vacation.get_vacation_type_display }}</span>
+                    </div>
+                    <div class="leave-status status-{{ vacation.status }}">
+                        {{ vacation.get_status_display }}
+                    </div>
+                </div>
+                <div class="leave-details">
+                    <div class="leave-dates">
+                        <i class="fas fa-calendar-alt"></i>
+                        <span>{{ vacation.start_date|date:"Y-m-d" }} - {{ vacation.end_date|date:"Y-m-d" }}</span>
+                    </div>
+                    <div class="leave-duration">
+                        <i class="fas fa-clock"></i>
+                        <span>{{ vacation.start_date|timesince:vacation.end_date }}</span>
+                    </div>
+                </div>
+                <div class="leave-reason">
+                    {{ vacation.reason|truncatechars:100 }}
+                </div>
+                <div class="leave-actions">
+                    <button class="action-btn view-btn" onclick="viewLeaveDetails({{ vacation.id }})">
+                        <i class="fas fa-eye"></i>
+                        عرض
+                    </button>
+                    {% if vacation.status == 'pending' %}
+                    <button class="action-btn edit-btn" onclick="editLeave({{ vacation.id }})">
+                        <i class="fas fa-edit"></i>
+                        تعديل
+                    </button>
+                    {% endif %}
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <i class="fas fa-calendar-times"></i>
+                <h4>لا توجد إجازات مسجلة</h4>
+                <p>لم تقم بتقديم أي طلبات إجازة بعد</p>
+                <button class="btn btn-primary" onclick="showSection('submit-leave')">
+                    <i class="fas fa-plus"></i>
+                    طلب إجازة جديد
+                </button>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Current Salary Section -->
+    <div id="current-salary-section" class="content-section">
+        <div class="section-header">
+            <h2>
+                <i class="fas fa-wallet"></i>
+                الراتب الحالي
+            </h2>
+            <div class="privacy-notice">
+                <i class="fas fa-shield-alt"></i>
+                معلومات سرية
+            </div>
+        </div>
+        
+        <div class="salary-overview">
+            <div class="salary-card main-salary">
+                <div class="salary-header">
+                    <h3>الراتب الأساسي</h3>
+                    <div class="salary-period">شهري</div>
+                </div>
+                <div class="salary-amount">
+                    {{ user.employee_profile.salary|default:0|floatformat:0|intcomma }} ل.س
+                </div>
+                <div class="salary-details">
+                    <div class="detail-item">
+                        <span>آخر زيادة:</span>
+                        <span>{{ last_salary_increase.date|date:"Y-m-d"|default:"لا توجد" }}</span>
+                    </div>
+                    <div class="detail-item">
+                        <span>تاريخ الاستحقاق:</span>
+                        <span>{{ next_salary_date|date:"Y-m-d"|default:"نهاية الشهر" }}</span>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="salary-breakdown">
+                <h4>تفصيل الراتب</h4>
+                <div class="breakdown-list">
+                    <div class="breakdown-item">
+                        <span class="item-label">الراتب الأساسي</span>
+                        <span class="item-value">{{ user.employee_profile.salary|default:0|floatformat:0|intcomma }} ل.س</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="item-label">بدل النقل</span>
+                        <span class="item-value">{{ transport_allowance|default:0|floatformat:0|intcomma }} ل.س</span>
+                    </div>
+                    <div class="breakdown-item">
+                        <span class="item-label">بدل السكن</span>
+                        <span class="item-value">{{ housing_allowance|default:0|floatformat:0|intcomma }} ل.س</span>
+                    </div>
+                    <div class="breakdown-item total">
+                        <span class="item-label">الإجمالي</span>
+                        <span class="item-value">{{ total_salary|default:user.employee_profile.salary|floatformat:0|intcomma }} ل.س</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Salary History Section -->
+    <div id="salary-history-section" class="content-section">
+        <div class="section-header">
+            <h2>
+                <i class="fas fa-chart-line"></i>
+                تاريخ الرواتب
+            </h2>
+            <div class="header-filters">
+                <select id="yearFilter" class="form-control">
+                    <option value="">اختر السنة</option>
+                    <option value="2024">2024</option>
+                    <option value="2023">2023</option>
+                    <option value="2022">2022</option>
+                </select>
+            </div>
+        </div>
+        
+        <div class="salary-timeline">
+            {% for payment in salary_payments|slice:":12" %}
+            <div class="timeline-item">
+                <div class="timeline-marker">
+                    <i class="fas fa-money-check-alt"></i>
+                </div>
+                <div class="timeline-content">
+                    <div class="timeline-header">
+                        <h4>{{ payment.date|date:"F Y" }}</h4>
+                        <span class="payment-amount">{{ payment.amount|floatformat:0|intcomma }} ل.س</span>
+                    </div>
+                    <div class="timeline-details">
+                        <div class="detail-row">
+                            <span>تاريخ الدفع:</span>
+                            <span>{{ payment.date|date:"Y-m-d" }}</span>
+                        </div>
+                        <div class="detail-row">
+                            <span>طريقة الدفع:</span>
+                            <span>{{ payment.get_payment_method_display|default:"تحويل بنكي" }}</span>
+                        </div>
+                        {% if payment.notes %}
+                        <div class="detail-row">
+                            <span>ملاحظات:</span>
+                            <span>{{ payment.notes }}</span>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <i class="fas fa-chart-line"></i>
+                <h4>لا توجد سجلات رواتب</h4>
+                <p>لم يتم تسجيل أي دفعات راتب بعد</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Payslips Section -->
+    <div id="payslips-section" class="content-section">
+        <div class="section-header">
+            <h2>
+                <i class="fas fa-file-invoice"></i>
+                قسائم الراتب
+            </h2>
+            <button class="download-all-btn" onclick="downloadAllPayslips()">
+                <i class="fas fa-download"></i>
+                تحميل الكل
+            </button>
+        </div>
+        
+        <div class="payslips-grid">
+            {% for payslip in recent_payslips %}
+            <div class="payslip-card">
+                <div class="payslip-header">
+                    <div class="payslip-date">
+                        <i class="fas fa-calendar"></i>
+                        <span>{{ payslip.date|date:"F Y" }}</span>
+                    </div>
+                    <div class="payslip-status">
+                        <span class="status-badge processed">معالج</span>
+                    </div>
+                </div>
+                <div class="payslip-amount">
+                    {{ payslip.net_amount|floatformat:0|intcomma }} ل.س
+                </div>
+                <div class="payslip-actions">
+                    <button class="action-btn view-btn" onclick="viewPayslip({{ payslip.id }})">
+                        <i class="fas fa-eye"></i>
+                        عرض
+                    </button>
+                    <button class="action-btn download-btn" onclick="downloadPayslip({{ payslip.id }})">
+                        <i class="fas fa-download"></i>
+                        تحميل
+                    </button>
+                </div>
+            </div>
+            {% empty %}
+            <div class="empty-state">
+                <i class="fas fa-file-invoice"></i>
+                <h4>لا توجد قسائم راتب</h4>
+                <p>لم يتم إنشاء أي قسائم راتب بعد</p>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Leave Balance Section -->
+    <div id="leave-balance-section" class="content-section">
+        <div class="section-header">
+            <h2>
+                <i class="fas fa-calendar-check"></i>
+                رصيد الإجازات
+            </h2>
+        </div>
+        
+        <div class="balance-overview">
+            <div class="balance-cards">
+                <div class="balance-card annual">
+                    <div class="balance-icon">
+                        <i class="fas fa-sun"></i>
+                    </div>
+                    <div class="balance-info">
+                        <h4>الإجازة السنوية</h4>
+                        <div class="balance-numbers">
+                            <span class="used">{{ annual_leave_used|default:0 }}</span>
+                            <span class="separator">/</span>
+                            <span class="total">{{ annual_leave_total|default:30 }}</span>
+                        </div>
+                        <div class="balance-label">يوم مستخدم من أصل</div>
+                    </div>
+                    <div class="balance-progress">
+                        <div class="progress-bar" style="width: {% widthratio annual_leave_used annual_leave_total 100 %}%"></div>
+                    </div>
+                </div>
+                
+                <div class="balance-card sick">
+                    <div class="balance-icon">
+                        <i class="fas fa-heartbeat"></i>
+                    </div>
+                    <div class="balance-info">
+                        <h4>الإجازة المرضية</h4>
+                        <div class="balance-numbers">
+                            <span class="used">{{ sick_leave_used|default:0 }}</span>
+                            <span class="separator">/</span>
+                            <span class="total">{{ sick_leave_total|default:15 }}</span>
+                        </div>
+                        <div class="balance-label">يوم مستخدم من أصل</div>
+                    </div>
+                    <div class="balance-progress">
+                        <div class="progress-bar" style="width: {% widthratio sick_leave_used sick_leave_total 100 %}%"></div>
+                    </div>
+                </div>
+                
+                <div class="balance-card emergency">
+                    <div class="balance-icon">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </div>
+                    <div class="balance-info">
+                        <h4>الإجازة الطارئة</h4>
+                        <div class="balance-numbers">
+                            <span class="used">{{ emergency_leave_used|default:0 }}</span>
+                            <span class="separator">/</span>
+                            <span class="total">{{ emergency_leave_total|default:5 }}</span>
+                        </div>
+                        <div class="balance-label">يوم مستخدم من أصل</div>
+                    </div>
+                    <div class="balance-progress">
+                        <div class="progress-bar" style="width: {% widthratio emergency_leave_used emergency_leave_total 100 %}%"></div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

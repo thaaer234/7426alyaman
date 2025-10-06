@@ -30,4 +30,7 @@ urlpatterns = [
     path('employee/advance/list/', views.EmployeeAdvanceListView.as_view(), name='employee_advance_list'),
     path("employee/<int:pk>/permissions/", views.EmployeePermissionsView.as_view(), name="employee_permissions"),
     path("denied/", views.no_permission, name="no_permission"),
+    
+    # Employee Dashboard
+    path('dashboard/', views.EmployeeDashboardView.as_view(), name='employee_dashboard'),
 ]

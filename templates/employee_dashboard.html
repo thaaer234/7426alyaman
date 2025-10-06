@@ -1,0 +1,309 @@
+{% extends "base.html" %}
+{% load static emp_perms %}
+{% load humanize %}
+
+{% block title %}لوحة تحكم الموظف - Panato{% endblock %}
+
+{% block extra_css %}
+<link rel="stylesheet" href="{% static 'css/employee-sidebar.css' %}">
+<link rel="stylesheet" href="{% static 'css/employee-content.css' %}">
+{% endblock %}
+
+{% block content %}
+<!-- Include Employee Sidebar -->
+{% include 'partials/_employee_sidebar.html' %}
+
+<!-- Include Content Sections -->
+{% include 'partials/_employee_content_sections.html' %}
+
+<!-- Additional Modals and Components -->
+<div id="leaveDetailsModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>تفاصيل طلب الإجازة</h3>
+            <button class="close-btn" onclick="closeLeaveDetails()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="leaveDetailsContent">
+            <!-- Content will be loaded dynamically -->
+        </div>
+    </div>
+</div>
+
+<div id="payslipModal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>قسيمة الراتب</h3>
+            <button class="close-btn" onclick="closePayslip()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body" id="payslipContent">
+            <!-- Content will be loaded dynamically -->
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script src="{% static 'js/employee-sidebar.js' %}"></script>
+<script>
+// Additional JavaScript for employee dashboard functionality
+
+// Section management
+document.addEventListener('sidebarSectionChange', function(e) {
+    const section = e.detail.section;
+    showContentSection(section);
+});
+
+function showContentSection(sectionName) {
+    // Hide all sections
+    document.querySelectorAll('.content-section').forEach(section => {
+        section.classList.remove('active');
+    });
+    
+    // Show target section
+    const targetSection = document.getElementById(`${sectionName}-section`);
+    if (targetSection) {
+        targetSection.classList.add('active');
+    }
+}
+
+// Leave management functions
+async function submitLeaveRequest(formData) {
+    try {
+        const response = await fetch('{% url "employ:vacation_create" %}', {
+            method: 'POST',
+            body: formData,
+            headers: {
+                'X-CSRFToken': getCSRFToken()
+            }
+        });
+        
+        if (response.ok) {
+            showSuccessMessage('تم إرسال طلب الإجازة بنجاح');
+            document.getElementById('leaveRequestForm').reset();
+            refreshLeaveHistory();
+        } else {
+            throw new Error('Failed to submit leave request');
+        }
+    } catch (error) {
+        console.error('Error submitting leave request:', error);
+        showErrorMessage('حدث خطأ أثناء إرسال طلب الإجازة');
+    }
+}
+
+async function viewLeaveDetails(leaveId) {
+    try {
+        const response = await fetch(`/api/employee/leave/${leaveId}/`);
+        const data = await response.json();
+        
+        if (response.ok) {
+            displayLeaveDetails(data);
+        } else {
+            throw new Error('Failed to load leave details');
+        }
+    } catch (error) {
+        console.error('Error loading leave details:', error);
+        showErrorMessage('حدث خطأ أثناء تحميل تفاصيل الإجازة');
+    }
+}
+
+function displayLeaveDetails(leaveData) {
+    const content = document.getElementById('leaveDetailsContent');
+    if (content) {
+        content.innerHTML = `
+            <div class="leave-details-view">
+                <div class="detail-grid">
+                    <div class="detail-item">
+                        <label>نوع الإجازة:</label>
+                        <value>${leaveData.vacation_type_display}</value>
+                    </div>
+                    <div class="detail-item">
+                        <label>تاريخ البداية:</label>
+                        <value>${leaveData.start_date}</value>
+                    </div>
+                    <div class="detail-item">
+                        <label>تاريخ النهاية:</label>
+                        <value>${leaveData.end_date}</value>
+                    </div>
+                    <div class="detail-item">
+                        <label>الحالة:</label>
+                        <value><span class="status-badge status-${leaveData.status}">${leaveData.status_display}</span></value>
+                    </div>
+                    <div class="detail-item full-width">
+                        <label>السبب:</label>
+                        <value>${leaveData.reason}</value>
+                    </div>
+                    ${leaveData.manager_opinion ? `
+                    <div class="detail-item full-width">
+                        <label>رأي المدير:</label>
+                        <value>${leaveData.manager_opinion}</value>
+                    </div>
+                    ` : ''}
+                </div>
+            </div>
+        `;
+        
+        const modal = document.getElementById('leaveDetailsModal');
+        if (modal) {
+            modal.classList.add('active');
+        }
+    }
+}
+
+async function viewPayslip(payslipId) {
+    try {
+        const response = await fetch(`/api/employee/payslip/${payslipId}/`);
+        const data = await response.json();
+        
+        if (response.ok) {
+            displayPayslip(data);
+        } else {
+            throw new Error('Failed to load payslip');
+        }
+    } catch (error) {
+        console.error('Error loading payslip:', error);
+        showErrorMessage('حدث خطأ أثناء تحميل قسيمة الراتب');
+    }
+}
+
+function displayPayslip(payslipData) {
+    const content = document.getElementById('payslipContent');
+    if (content) {
+        content.innerHTML = `
+            <div class="payslip-view">
+                <div class="payslip-header-info">
+                    <h4>${payslipData.employee_name}</h4>
+                    <p>فترة الراتب: ${payslipData.period}</p>
+                </div>
+                <div class="payslip-breakdown">
+                    <div class="breakdown-section">
+                        <h5>الاستحقاقات</h5>
+                        <div class="breakdown-item">
+                            <span>الراتب الأساسي:</span>
+                            <span>${payslipData.basic_salary} ل.س</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span>البدلات:</span>
+                            <span>${payslipData.allowances} ل.س</span>
+                        </div>
+                    </div>
+                    <div class="breakdown-section">
+                        <h5>الخصومات</h5>
+                        <div class="breakdown-item">
+                            <span>التأمينات:</span>
+                            <span>${payslipData.insurance} ل.س</span>
+                        </div>
+                        <div class="breakdown-item">
+                            <span>الضرائب:</span>
+                            <span>${payslipData.taxes} ل.س</span>
+                        </div>
+                    </div>
+                    <div class="breakdown-section total">
+                        <div class="breakdown-item">
+                            <span>الصافي:</span>
+                            <span>${payslipData.net_amount} ل.س</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="payslip-actions">
+                    <button class="btn btn-primary" onclick="downloadPayslip(${payslipData.id})">
+                        <i class="fas fa-download"></i>
+                        تحميل PDF
+                    </button>
+                </div>
+            </div>
+        `;
+        
+        const modal = document.getElementById('payslipModal');
+        if (modal) {
+            modal.classList.add('active');
+        }
+    }
+}
+
+function closeLeaveDetails() {
+    const modal = document.getElementById('leaveDetailsModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+function closePayslip() {
+    const modal = document.getElementById('payslipModal');
+    if (modal) {
+        modal.classList.remove('active');
+    }
+}
+
+async function downloadPayslip(payslipId) {
+    try {
+        const response = await fetch(`/api/employee/payslip/${payslipId}/download/`);
+        
+        if (response.ok) {
+            const blob = await response.blob();
+            const url = window.URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = `payslip_${payslipId}.pdf`;
+            document.body.appendChild(a);
+            a.click();
+            window.URL.revokeObjectURL(url);
+            document.body.removeChild(a);
+        } else {
+            throw new Error('Failed to download payslip');
+        }
+    } catch (error) {
+        console.error('Error downloading payslip:', error);
+        showErrorMessage('حدث خطأ أثناء تحميل قسيمة الراتب');
+    }
+}
+
+function getCSRFToken() {
+    const token = document.querySelector('[name=csrfmiddlewaretoken]');
+    return token ? token.value : '';
+}
+
+function showSuccessMessage(message) {
+    if (window.panatoSidebar) {
+        window.panatoSidebar.showSuccessMessage(message);
+    }
+}
+
+function showErrorMessage(message) {
+    if (window.panatoSidebar) {
+        window.panatoSidebar.showErrorMessage(message);
+    }
+}
+
+// Form submission handler
+document.addEventListener('DOMContentLoaded', function() {
+    const leaveForm = document.getElementById('leaveRequestForm');
+    if (leaveForm) {
+        leaveForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            const formData = new FormData(this);
+            submitLeaveRequest(formData);
+        });
+    }
+    
+    // Initialize date restrictions
+    const startDateInput = document.getElementById('startDate');
+    const endDateInput = document.getElementById('endDate');
+    
+    if (startDateInput && endDateInput) {
+        const today = new Date().toISOString().split('T')[0];
+        startDateInput.min = today;
+        
+        startDateInput.addEventListener('change', function() {
+            endDateInput.min = this.value;
+            if (endDateInput.value && endDateInput.value < this.value) {
+                endDateInput.value = this.value;
+            }
+        });
+    }
+});
+</script>
+{% endblock %}

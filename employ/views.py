@@ -21,6 +21,92 @@ from .forms import TeacherForm, EmployeeRegistrationForm, AdminVacationForm
 
 
 # -----------------------------
+# Employee Dashboard View
+# -----------------------------
+class EmployeeDashboardView(LoginRequiredMixin, TemplateView):
+    """Employee self-service dashboard with sidebar navigation"""
+    template_name = 'employee_dashboard.html'
+    
+    def get_context_data(self, **kwargs):
+        context = super().get_context_data(**kwargs)
+        user = self.request.user
+        
+        # Get employee profile
+        employee = getattr(user, 'employee_profile', None)
+        if not employee:
+            context['error'] = 'لا يوجد ملف موظف مرتبط بهذا المستخدم'
+            return context
+        
+        # Get leave data
+        vacations = Vacation.objects.filter(employee=employee).order_by('-created_at')
+        context['pending_leaves_count'] = vacations.filter(status='معلقة').count()
+        
+        # Get salary data
+        try:
+            ExpenseEntry._meta.get_field('employee')
+            salary_payments = ExpenseEntry.objects.filter(employee=employee).order_by('-date')[:12]
+        except FieldDoesNotExist:
+            salary_payments = ExpenseEntry.objects.none()
+        
+        context.update({
+            'employee': employee,
+            'salary_payments': salary_payments,
+            'recent_payslips': salary_payments[:6],
+            'work_days_this_month': self.calculate_work_days_this_month(employee),
+            'work_hours_this_month': self.calculate_work_hours_this_month(employee),
+            'annual_leave_used': self.get_leave_used(employee, 'يومية'),
+            'annual_leave_total': 30,
+            'sick_leave_used': self.get_leave_used(employee, 'مرضية'),
+            'sick_leave_total': 15,
+            'emergency_leave_used': self.get_leave_used(employee, 'طارئة'),
+            'emergency_leave_total': 5,
+            'last_zakat_calculation': self.get_last_zakat_calculation(employee),
+            'last_zakat_amount': self.get_last_zakat_amount(employee),
+        })
+        
+        return context
+    
+    def calculate_work_days_this_month(self, employee):
+        """Calculate work days for current month"""
+        from datetime import datetime
+        today = datetime.now()
+        # This would typically integrate with attendance system
+        return 22  # Placeholder
+    
+    def calculate_work_hours_this_month(self, employee):
+        """Calculate work hours for current month"""
+        # This would typically integrate with attendance system
+        return 176  # Placeholder (22 days * 8 hours)
+    
+    def get_leave_used(self, employee, leave_type):
+        """Get used leave days for specific type"""
+        from datetime import datetime
+        current_year = datetime.now().year
+        
+        vacations = Vacation.objects.filter(
+            employee=employee,
+            vacation_type=leave_type,
+            start_date__year=current_year,
+            status='موافق'
+        )
+        
+        total_days = 0
+        for vacation in vacations:
+            days = (vacation.end_date - vacation.start_date).days + 1
+            total_days += days
+        
+        return total_days
+    
+    def get_last_zakat_calculation(self, employee):
+        """Get last zakat calculation date"""
+        # This would integrate with a zakat calculation model
+        return None  # Placeholder
+    
+    def get_last_zakat_amount(self, employee):
+        """Get last calculated zakat amount"""
+        # This would integrate with a zakat calculation model
+        return Decimal('0')  # Placeholder
+# -----------------------------
 # أدوات مساعدة
 # -----------------------------
 def _employee_full_name(employee):

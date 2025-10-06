@@ -1,0 +1,302 @@
+{% load static emp_perms %}
+{% load humanize %}
+
+<!-- Employee Sidebar Component -->
+<div class="employee-sidebar" id="employeeSidebar">
+    <!-- Sidebar Header with Profile -->
+    <div class="sidebar-header">
+        <div class="profile-section">
+            <div class="profile-avatar">
+                {% if user.employee_profile.photo %}
+                    <img src="{{ user.employee_profile.photo.url }}" alt="{{ user.get_full_name }}" class="avatar-img">
+                {% else %}
+                    <div class="avatar-placeholder">
+                        <i class="fas fa-user"></i>
+                    </div>
+                {% endif %}
+                <div class="status-indicator online"></div>
+            </div>
+            <div class="profile-info">
+                <h4 class="employee-name">{{ user.get_full_name|default:user.username }}</h4>
+                <p class="employee-id">ID: {{ user.employee_profile.employee_id|default:user.id }}</p>
+                <p class="employee-department">{{ user.employee_profile.get_position_display|default:"موظف" }}</p>
+                <span class="employment-status active">نشط</span>
+            </div>
+        </div>
+        
+        <!-- Quick Actions -->
+        <div class="quick-actions">
+            <button class="action-btn profile-btn" data-section="profile">
+                <i class="fas fa-user-circle"></i>
+                <span>الملف الشخصي</span>
+            </button>
+            <button class="action-btn notifications-btn" data-notifications>
+                <i class="fas fa-bell"></i>
+                <span>الإشعارات</span>
+                <div class="notification-badge">3</div>
+            </button>
+        </div>
+    </div>
+
+    <!-- Zakat Section - Prominently Positioned -->
+    <div class="zakat-section">
+        <button class="zakat-button" onclick="openZakatCalculator()">
+            <div class="zakat-icon">
+                <i class="fas fa-hand-holding-heart"></i>
+            </div>
+            <div class="zakat-content">
+                <h3>حاسبة الزكاة</h3>
+                <p>احسب زكاة راتبك</p>
+            </div>
+            <div class="zakat-arrow">
+                <i class="fas fa-chevron-left"></i>
+            </div>
+        </button>
+        
+        <!-- Zakat Quick Info -->
+        <div class="zakat-info">
+            <div class="zakat-stat">
+                <span class="stat-label">آخر حساب</span>
+                <span class="stat-value">{{ last_zakat_calculation.date|date:"M Y"|default:"لم يحسب بعد" }}</span>
+            </div>
+            <div class="zakat-stat">
+                <span class="stat-label">المبلغ المستحق</span>
+                <span class="stat-value">{{ last_zakat_amount|default:"0"|floatformat:0 }} ل.س</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation Menu -->
+    <nav class="sidebar-nav">
+        <!-- Personal Profile Section -->
+        <div class="nav-section">
+            <h5 class="section-title">
+                <i class="fas fa-user-cog"></i>
+                الملف الشخصي
+            </h5>
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="personal-info">
+                        <i class="fas fa-id-card"></i>
+                        <span>البيانات الشخصية</span>
+                        <div class="nav-indicator"></div>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="contact-info">
+                        <i class="fas fa-address-book"></i>
+                        <span>معلومات الاتصال</span>
+                        <div class="nav-indicator"></div>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="emergency-contact">
+                        <i class="fas fa-phone-alt"></i>
+                        <span>جهة الاتصال الطارئ</span>
+                        <div class="nav-indicator"></div>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Leave Management Section -->
+        <div class="nav-section">
+            <h5 class="section-title">
+                <i class="fas fa-calendar-times"></i>
+                إدارة الإجازات
+            </h5>
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="submit-leave">
+                        <i class="fas fa-plus-circle"></i>
+                        <span>طلب إجازة جديد</span>
+                        <div class="nav-indicator"></div>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="leave-history">
+                        <i class="fas fa-history"></i>
+                        <span>تاريخ الإجازات</span>
+                        <div class="leave-count">{{ pending_leaves_count|default:0 }}</div>
+                        <div class="nav-indicator"></div>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="leave-balance">
+                        <i class="fas fa-calendar-check"></i>
+                        <span>رصيد الإجازات</span>
+                        <div class="nav-indicator"></div>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Salary Review Section -->
+        <div class="nav-section">
+            <h5 class="section-title">
+                <i class="fas fa-money-check-alt"></i>
+                مراجعة الراتب
+            </h5>
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="current-salary">
+                        <i class="fas fa-wallet"></i>
+                        <span>الراتب الحالي</span>
+                        <div class="nav-indicator"></div>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="salary-history">
+                        <i class="fas fa-chart-line"></i>
+                        <span>تاريخ الرواتب</span>
+                        <div class="nav-indicator"></div>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="payslips">
+                        <i class="fas fa-file-invoice"></i>
+                        <span>قسائم الراتب</span>
+                        <div class="nav-indicator"></div>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="tax-documents">
+                        <i class="fas fa-file-alt"></i>
+                        <span>المستندات الضريبية</span>
+                        <div class="nav-indicator"></div>
+                    </a>
+                </li>
+            </ul>
+        </div>
+
+        <!-- Additional Services -->
+        <div class="nav-section">
+            <h5 class="section-title">
+                <i class="fas fa-cogs"></i>
+                خدمات إضافية
+            </h5>
+            <ul class="nav-list">
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="attendance">
+                        <i class="fas fa-clock"></i>
+                        <span>سجل الحضور</span>
+                        <div class="nav-indicator"></div>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="performance">
+                        <i class="fas fa-chart-bar"></i>
+                        <span>تقييم الأداء</span>
+                        <div class="nav-indicator"></div>
+                    </a>
+                </li>
+                <li class="nav-item">
+                    <a href="#" class="nav-link" data-section="training">
+                        <i class="fas fa-graduation-cap"></i>
+                        <span>التدريب والتطوير</span>
+                        <div class="nav-indicator"></div>
+                    </a>
+                </li>
+            </ul>
+        </div>
+    </nav>
+
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer">
+        <div class="footer-stats">
+            <div class="stat-item">
+                <i class="fas fa-calendar-day"></i>
+                <span>أيام العمل: {{ work_days_this_month|default:0 }}</span>
+            </div>
+            <div class="stat-item">
+                <i class="fas fa-clock"></i>
+                <span>ساعات العمل: {{ work_hours_this_month|default:0 }}</span>
+            </div>
+        </div>
+        
+        <div class="footer-actions">
+            <button class="footer-btn settings-btn" data-section="settings">
+                <i class="fas fa-cog"></i>
+                <span>الإعدادات</span>
+            </button>
+            <button class="footer-btn help-btn" data-section="help">
+                <i class="fas fa-question-circle"></i>
+                <span>المساعدة</span>
+            </button>
+        </div>
+        
+        <!-- Logout Button -->
+        <form action="{% url 'logout' %}" method="post" class="logout-form">
+            {% csrf_token %}
+            <button type="submit" class="logout-btn">
+                <i class="fas fa-sign-out-alt"></i>
+                <span>تسجيل الخروج</span>
+            </button>
+        </form>
+    </div>
+
+    <!-- Mobile Toggle Button -->
+    <button class="mobile-toggle" onclick="toggleSidebar()">
+        <i class="fas fa-bars"></i>
+    </button>
+</div>
+
+<!-- Zakat Calculator Modal -->
+<div id="zakatModal" class="modal zakat-modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3>
+                <i class="fas fa-hand-holding-heart"></i>
+                حاسبة الزكاة
+            </h3>
+            <button class="close-btn" onclick="closeZakatCalculator()">
+                <i class="fas fa-times"></i>
+            </button>
+        </div>
+        <div class="modal-body">
+            <form id="zakatForm">
+                <div class="form-group">
+                    <label for="monthlyIncome">الراتب الشهري (ل.س)</label>
+                    <input type="number" id="monthlyIncome" class="form-control" 
+                           value="{{ user.employee_profile.salary|default:0 }}" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="annualIncome">الدخل السنوي (ل.س)</label>
+                    <input type="number" id="annualIncome" class="form-control" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="nisabAmount">النصاب (ل.س)</label>
+                    <input type="number" id="nisabAmount" class="form-control" value="85000" readonly>
+                </div>
+                <div class="form-group">
+                    <label for="zakatRate">معدل الزكاة (%)</label>
+                    <input type="number" id="zakatRate" class="form-control" value="2.5" readonly>
+                </div>
+                <div class="calculation-result">
+                    <h4>النتيجة:</h4>
+                    <div class="result-item">
+                        <span>مبلغ الزكاة السنوي:</span>
+                        <strong id="annualZakat">0 ل.س</strong>
+                    </div>
+                    <div class="result-item">
+                        <span>مبلغ الزكاة الشهري:</span>
+                        <strong id="monthlyZakat">0 ل.س</strong>
+                    </div>
+                </div>
+                <div class="zakat-actions">
+                    <button type="button" class="btn btn-primary" onclick="calculateZakat()">
+                        <i class="fas fa-calculator"></i>
+                        احسب الزكاة
+                    </button>
+                    <button type="button" class="btn btn-success" onclick="saveZakatCalculation()">
+                        <i class="fas fa-save"></i>
+                        حفظ الحساب
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+
+<!-- Overlay for mobile -->
+<div class="sidebar-overlay" onclick="closeSidebar()"></div>
